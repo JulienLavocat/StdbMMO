@@ -1,4 +1,4 @@
-database=aria
+database=ariaonline
 
 .PHONY: publish client bindings server all
 
