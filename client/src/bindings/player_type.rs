@@ -8,6 +8,9 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[sats(crate = __lib)]
 pub struct Player {
     pub id: __sdk::Identity,
+    pub x: f32,
+    pub y: f32,
+    pub z: f32,
 }
 
 impl __sdk::InModule for Player {

@@ -4,11 +4,13 @@
 #![allow(unused, clippy::all)]
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
+pub mod move_player_reducer;
 pub mod on_connected_reducer;
 pub mod on_disconnected_reducer;
 pub mod player_type;
 pub mod players_table;
 
+pub use move_player_reducer::{move_player, set_flags_for_move_player, MovePlayerCallbackId};
 pub use on_connected_reducer::{on_connected, set_flags_for_on_connected, OnConnectedCallbackId};
 pub use on_disconnected_reducer::{
     on_disconnected, set_flags_for_on_disconnected, OnDisconnectedCallbackId,
@@ -24,6 +26,7 @@ pub use players_table::*;
 /// to indicate which reducer caused the event.
 
 pub enum Reducer {
+    MovePlayer { x: f32, y: f32, z: f32 },
     OnConnected,
     OnDisconnected,
 }
@@ -35,6 +38,7 @@ impl __sdk::InModule for Reducer {
 impl __sdk::Reducer for Reducer {
     fn reducer_name(&self) -> &'static str {
         match self {
+            Reducer::MovePlayer { .. } => "move_player",
             Reducer::OnConnected => "on_connected",
             Reducer::OnDisconnected => "on_disconnected",
         }
@@ -44,6 +48,13 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
     type Error = __sdk::Error;
     fn try_from(value: __ws::ReducerCallInfo<__ws::BsatnFormat>) -> __sdk::Result<Self> {
         match &value.reducer_name[..] {
+            "move_player" => Ok(
+                __sdk::parse_reducer_args::<move_player_reducer::MovePlayerArgs>(
+                    "move_player",
+                    &value.args,
+                )?
+                .into(),
+            ),
             "on_connected" => Ok(
                 __sdk::parse_reducer_args::<on_connected_reducer::OnConnectedArgs>(
                     "on_connected",
