@@ -10,6 +10,7 @@ pub enum Actions {
     Move,
     Jump,
     Run,
+    Look,
 }
 
 pub fn create_input_map() -> InputMap<Actions> {
@@ -19,6 +20,7 @@ pub fn create_input_map() -> InputMap<Actions> {
 
     input_map.insert(Actions::Jump, KeyCode::Space);
     input_map.insert(Actions::Run, KeyCode::ShiftLeft);
+    input_map.insert(Actions::Look, MouseButton::Right);
 
     input_map
 }
