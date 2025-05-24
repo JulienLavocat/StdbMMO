@@ -1,17 +1,22 @@
+use avian3d::PhysicsPlugins;
 use bevy::log::{DEFAULT_FILTER, LogPlugin};
 use bevy::prelude::*;
 use bevy::window::WindowMode;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_tnua::prelude::TnuaControllerPlugin;
+use bevy_tnua_avian3d::TnuaAvian3dPlugin;
 use input::Actions;
 use leafwing_input_manager::plugin::InputManagerPlugin;
 use players::PlayersPlugin;
 use server::ServerPlugin;
+use world::WorldPlugin;
 
 mod bindings;
 mod input;
 mod players;
 mod server;
+mod world;
 
 fn main() {
     App::new()
@@ -37,8 +42,11 @@ fn main() {
         .add_plugins((
             WorldInspectorPlugin::new(),
             InputManagerPlugin::<Actions>::default(),
+            PhysicsPlugins::default(),
+            TnuaControllerPlugin::new(FixedUpdate),
+            TnuaAvian3dPlugin::new(FixedUpdate),
         ))
         .add_plugins(ServerPlugin)
-        .add_plugins(PlayersPlugin)
+        .add_plugins((WorldPlugin, PlayersPlugin))
         .run();
 }
