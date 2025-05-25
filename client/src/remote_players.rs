@@ -74,10 +74,10 @@ fn on_remote_player_inserted(
                     Vec3::new(0.0, 0.0, 0.0),
                     Vec3::new(0.0, 1.0, 0.0),
                 ),
-                SceneRoot(model),
                 RemotePlayer {
                     target_position: Vec3::new(event.row.x, event.row.y, event.row.z),
                 },
+                children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
             ))
             .id();
         registry.register(event.row.id, entity);
