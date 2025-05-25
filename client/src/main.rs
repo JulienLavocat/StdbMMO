@@ -16,6 +16,7 @@ use server::ServerPlugin;
 use world::WorldPlugin;
 
 mod bindings;
+mod constants;
 mod input;
 mod local_player;
 mod remote_players;
@@ -29,7 +30,8 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Aria Online".to_string(),
-                        mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
+                        mode: WindowMode::Windowed,
+                        // mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
                         ..Default::default()
                     }),
                     ..default()

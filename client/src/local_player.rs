@@ -10,17 +10,19 @@ use bevy_tnua_avian3d::TnuaAvian3dSensorShape;
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
-    bindings::{DbConnection, Player as PlayerTable},
+    bindings::{DbConnection, Player as PlayerTable, move_player},
+    constants::PLAYER_WALK_SPEED,
     input::{Actions, create_input_map},
 };
-
-const WALK_SPEED: f32 = 10.0;
 
 #[derive(Component)]
 pub struct LocalPlayer;
 
 #[derive(Component)]
 pub struct LocalPlayerCamera;
+
+#[derive(Component)]
+pub struct MovementReplication(pub Timer);
 
 pub struct LocalPlayerPlugin;
 
@@ -32,7 +34,7 @@ impl Plugin for LocalPlayerPlugin {
                 FixedUpdate,
                 apply_controls.in_set(TnuaUserControlsSystemSet),
             )
-            .add_systems(PostUpdate, rotate_character);
+            .add_systems(PostUpdate, (rotate_character, sync_movement_with_server));
     }
 }
 
@@ -44,7 +46,7 @@ fn on_player_inserted(
 ) {
     for event in events.read() {
         if event.row.id != conn.identity() {
-            return;
+            continue;
         }
 
         info!("Local player inserted: {:?}", event.row);
@@ -62,6 +64,7 @@ fn on_player_inserted(
             LockedAxes::ROTATION_LOCKED,
             Visibility::Visible,
             ThirdPersonCameraTarget,
+            MovementReplication(Timer::from_seconds(0.1, TimerMode::Repeating)),
             children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
         ));
 
@@ -90,7 +93,7 @@ fn on_player_deleted(
 
     for event in events.read() {
         if event.row.id != conn.identity() {
-            return;
+            continue;
         }
 
         info!(
@@ -119,7 +122,7 @@ fn apply_controls(
     let direction = (forward * direction.y + right * direction.x).normalize_or_zero();
 
     controller.basis(TnuaBuiltinWalk {
-        desired_velocity: direction * WALK_SPEED,
+        desired_velocity: direction * PLAYER_WALK_SPEED,
         float_height: 0.51,
         ..Default::default()
     });
@@ -142,5 +145,19 @@ fn rotate_character(
     if flat_forward.length_squared() > 0.0 {
         let target_rotation = Quat::from_rotation_arc(Vec3::Z, -flat_forward);
         player_transform.rotation = target_rotation;
+    }
+}
+
+fn sync_movement_with_server(
+    time: Res<Time>,
+    player: Single<(&GlobalTransform, &mut MovementReplication)>,
+    conn: Res<StdbConnection<DbConnection>>,
+) {
+    let (player_transform, mut replication) = player.into_inner();
+
+    replication.0.tick(time.delta());
+    if replication.0.just_finished() {
+        let pos = player_transform.translation();
+        conn.reducers().move_player(pos.x, pos.y, pos.z).unwrap();
     }
 }

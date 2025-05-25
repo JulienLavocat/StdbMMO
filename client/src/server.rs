@@ -56,7 +56,7 @@ fn on_connected(mut events: ReadStdbConnectedEvent, conn: Res<StdbConnection<DbC
             .on_error(|_, err| {
                 error!("Error subscribing to players: {}", err);
             })
-            .subscribe("SELECT * FROM players");
+            .subscribe("SELECT * FROM players WHERE online = true");
     }
 }
 

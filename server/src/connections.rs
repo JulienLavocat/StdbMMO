@@ -9,10 +9,13 @@ fn on_connected(ctx: &ReducerContext) {
         x: 0.0,
         y: 0.0,
         z: 0.0,
+        online: true,
     });
 }
 
 #[reducer(client_disconnected)]
 fn on_disconnected(ctx: &ReducerContext) {
-    // ctx.db.players().id().delete(ctx.sender);
+    let mut player = ctx.db.players().id().find(ctx.sender).unwrap();
+    player.online = false;
+    ctx.db.players().id().update(player);
 }
