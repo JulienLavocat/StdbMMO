@@ -9,6 +9,10 @@ fn on_connected(ctx: &ReducerContext) {
         x: 0.0,
         y: 0.0,
         z: 0.0,
+        max_health: 100.0,
+        health: 75.0,
+        max_mana: 100.0,
+        mana: 50.0,
         online: true,
     });
 }

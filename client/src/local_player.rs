@@ -58,6 +58,7 @@ fn on_player_inserted(
 
         commands.spawn((
             LocalPlayer,
+            Visibility::Visible,
             Name::new(format!("Player#{}", event.row.id.to_abbreviated_hex())),
             create_input_map(),
             Transform::from_xyz(event.row.x, event.row.y, event.row.z),
@@ -66,7 +67,6 @@ fn on_player_inserted(
             TnuaController::default(),
             TnuaAvian3dSensorShape(Collider::cylinder(0.29, 0.0)),
             LockedAxes::ROTATION_LOCKED,
-            Visibility::Visible,
             ThirdPersonCameraTarget,
             MovementReplication {
                 last_position: Vec3::new(event.row.x, event.row.y, event.row.z),

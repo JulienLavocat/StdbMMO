@@ -1,5 +1,9 @@
 use avian3d::prelude::{Collider, RigidBody};
-use bevy::{platform::collections::HashMap, prelude::*};
+use bevy::{color::palettes::css::BLUE, platform::collections::HashMap, prelude::*};
+use bevy_health_bar3d::{
+    plugin::HealthBarPlugin,
+    prelude::{BarHeight, BarSettings, ColorScheme, ForegroundColor, Percentage},
+};
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent, StdbConnection};
 use spacetimedb_sdk::Identity;
 
@@ -8,14 +12,46 @@ use crate::{
     constants::PLAYER_WALK_SPEED,
 };
 
+#[derive(Resource, Default)]
+pub struct RemotePlayersRegistry {
+    entities: HashMap<Identity, Entity>,
+}
+
 #[derive(Component)]
 pub struct RemotePlayer {
     pub target_position: Vec3,
 }
 
-#[derive(Resource, Default)]
-pub struct RemotePlayersRegistry {
-    entities: HashMap<Identity, Entity>,
+#[derive(Component, Reflect)]
+pub struct Health {
+    pub current: f32,
+    pub max: f32,
+}
+
+impl Percentage for Health {
+    fn value(&self) -> f32 {
+        if self.max == 0.0 {
+            0.0
+        } else {
+            self.current / self.max
+        }
+    }
+}
+
+#[derive(Component, Reflect)]
+pub struct Mana {
+    pub current: f32,
+    pub max: f32,
+}
+
+impl Percentage for Mana {
+    fn value(&self) -> f32 {
+        if self.max == 0.0 {
+            0.0
+        } else {
+            self.current / self.max
+        }
+    }
 }
 
 impl RemotePlayersRegistry {
@@ -36,13 +72,20 @@ pub struct RemotePlayersPlugin;
 
 impl Plugin for RemotePlayersPlugin {
     fn build(&self, app: &mut App) {
-        app.init_resource::<RemotePlayersRegistry>()
-            .add_systems(
-                PreUpdate,
-                (on_remote_player_inserted, on_remote_player_deleted).chain(),
-            )
-            .add_systems(PostUpdate, lerp_remote_players)
-            .add_systems(Update, on_remote_player_updated);
+        app.add_plugins((
+            HealthBarPlugin::<Health>::default(),
+            HealthBarPlugin::<Mana>::default(),
+        ))
+        .init_resource::<RemotePlayersRegistry>()
+        .insert_resource(
+            ColorScheme::<Mana>::new().foreground_color(ForegroundColor::Static(BLUE.into())),
+        )
+        .add_systems(
+            PreUpdate,
+            (on_remote_player_inserted, on_remote_player_deleted).chain(),
+        )
+        .add_systems(PostUpdate, lerp_remote_players)
+        .add_systems(Update, on_remote_player_updated);
     }
 }
 
@@ -67,6 +110,7 @@ fn on_remote_player_inserted(
                     "RemotePlayer#{}",
                     event.row.id.to_abbreviated_hex()
                 )),
+                Visibility::Visible,
                 Transform::from_xyz(event.row.x, event.row.y, event.row.z),
                 RigidBody::Kinematic,
                 Collider::capsule_endpoints(
@@ -77,7 +121,28 @@ fn on_remote_player_inserted(
                 RemotePlayer {
                     target_position: Vec3::new(event.row.x, event.row.y, event.row.z),
                 },
-                Visibility::Visible,
+                (
+                    Health {
+                        current: event.row.health,
+                        max: event.row.max_health,
+                    },
+                    BarSettings::<Health> {
+                        offset: 1.6,
+                        height: BarHeight::Static(0.05),
+                        width: 1.0,
+                        ..default()
+                    },
+                    Mana {
+                        current: event.row.mana,
+                        max: event.row.max_mana,
+                    },
+                    BarSettings::<Mana> {
+                        offset: 1.5,
+                        height: BarHeight::Static(0.05),
+                        width: 1.0,
+                        ..default()
+                    },
+                ),
                 children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
             ))
             .id();

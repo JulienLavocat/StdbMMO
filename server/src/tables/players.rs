@@ -7,5 +7,9 @@ pub struct Player {
     pub x: f32,
     pub y: f32,
     pub z: f32,
+    pub health: f32,
+    pub max_health: f32,
+    pub mana: f32,
+    pub max_mana: f32,
     pub online: bool,
 }
