@@ -7,3 +7,4 @@ edition = "2024"
 bindings = { path = "../bindings" }
 spacetimedb-sdk = "1.1.1"
 rand = "0.9.1"
+tokio = "1.45.1"
