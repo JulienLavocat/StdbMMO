@@ -22,7 +22,11 @@ pub struct LocalPlayer;
 pub struct LocalPlayerCamera;
 
 #[derive(Component)]
-pub struct MovementReplication(pub Timer);
+pub struct MovementReplication {
+    pub timer: Timer,
+    pub last_position: Vec3,
+    pub position_threshold_squarred: f32,
+}
 
 pub struct LocalPlayerPlugin;
 
@@ -64,7 +68,11 @@ fn on_player_inserted(
             LockedAxes::ROTATION_LOCKED,
             Visibility::Visible,
             ThirdPersonCameraTarget,
-            MovementReplication(Timer::from_seconds(0.1, TimerMode::Repeating)),
+            MovementReplication {
+                last_position: Vec3::new(event.row.x, event.row.y, event.row.z),
+                timer: Timer::from_seconds(0.1, TimerMode::Repeating),
+                position_threshold_squarred: 0.01,
+            },
             children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
         ));
 
@@ -155,9 +163,14 @@ fn sync_movement_with_server(
 ) {
     let (player_transform, mut replication) = player.into_inner();
 
-    replication.0.tick(time.delta());
-    if replication.0.just_finished() {
-        let pos = player_transform.translation();
-        conn.reducers().move_player(pos.x, pos.y, pos.z).unwrap();
+    replication.timer.tick(time.delta());
+    if replication.timer.just_finished() {
+        let current_position = player_transform.translation();
+        let delta = current_position - replication.last_position;
+        if delta.length_squared() >= replication.position_threshold_squarred {
+            let pos = player_transform.translation();
+            conn.reducers().move_player(pos.x, pos.y, pos.z).unwrap();
+            replication.last_position = current_position;
+        }
     }
 }

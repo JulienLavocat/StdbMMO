@@ -77,6 +77,7 @@ fn on_remote_player_inserted(
                 RemotePlayer {
                     target_position: Vec3::new(event.row.x, event.row.y, event.row.z),
                 },
+                Visibility::Visible,
                 children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
             ))
             .id();
