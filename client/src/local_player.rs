@@ -1,5 +1,5 @@
 use avian3d::prelude::*;
-use bevy::{math::VectorSpace, prelude::*};
+use bevy::prelude::*;
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, StdbConnection};
 use bevy_third_person_camera::{CameraSyncSet, ThirdPersonCamera, ThirdPersonCameraTarget, Zoom};
 use bevy_tnua::{

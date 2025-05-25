@@ -11,12 +11,14 @@ use bevy_tnua_avian3d::TnuaAvian3dPlugin;
 use input::Actions;
 use leafwing_input_manager::plugin::InputManagerPlugin;
 use local_player::LocalPlayerPlugin;
+use remote_players::RemotePlayersPlugin;
 use server::ServerPlugin;
 use world::WorldPlugin;
 
 mod bindings;
 mod input;
 mod local_player;
+mod remote_players;
 mod server;
 mod world;
 
@@ -51,6 +53,6 @@ fn main() {
             ThirdPersonCameraPlugin,
         ))
         .add_plugins(ServerPlugin)
-        .add_plugins((WorldPlugin, LocalPlayerPlugin))
+        .add_plugins((WorldPlugin, LocalPlayerPlugin, RemotePlayersPlugin))
         .run();
 }
