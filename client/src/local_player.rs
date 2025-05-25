@@ -9,7 +9,7 @@ use bevy_tnua::{
     prelude::{TnuaBuiltinJump, TnuaBuiltinWalk, TnuaController},
 };
 use bevy_tnua_avian3d::TnuaAvian3dSensorShape;
-use bindings::{DbConnection, Player as PlayerTable, move_player};
+use bindings::{DbConnection, Player as PlayerTable, PlayerPosition, move_player};
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
@@ -35,7 +35,15 @@ pub struct LocalPlayerPlugin;
 impl Plugin for LocalPlayerPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(PostUpdate, CameraSyncSet.after(PhysicsSet::Sync))
-            .add_systems(PreUpdate, (on_player_inserted, on_player_deleted).chain())
+            .add_systems(
+                PreUpdate,
+                (
+                    on_player_inserted,
+                    on_player_position_inserted,
+                    on_player_deleted,
+                )
+                    .chain(),
+            )
             .add_systems(
                 FixedUpdate,
                 apply_controls.in_set(TnuaUserControlsSystemSet),
@@ -63,18 +71,13 @@ fn on_player_inserted(
             Visibility::Visible,
             Name::new(format!("Player#{}", event.row.id.to_abbreviated_hex())),
             create_input_map(),
-            Transform::from_xyz(event.row.x, event.row.y, event.row.z),
+            Transform::default(),
             RigidBody::Dynamic,
             Collider::capsule_endpoints(0.3, Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 1.0, 0.0)),
             TnuaController::default(),
             TnuaAvian3dSensorShape(Collider::cylinder(0.29, 0.0)),
             LockedAxes::ROTATION_LOCKED,
             ThirdPersonCameraTarget,
-            MovementReplication {
-                last_position: Vec3::new(event.row.x, event.row.y, event.row.z),
-                timer: Timer::from_seconds(0.1, TimerMode::Repeating),
-                position_threshold_squarred: 0.01,
-            },
             children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
         ));
 
@@ -112,6 +115,30 @@ fn on_player_deleted(
             event.row, player_entity, camera_entity
         );
         commands.entity(player_entity).despawn();
+    }
+}
+
+fn on_player_position_inserted(
+    mut commands: Commands,
+    mut events: ReadInsertEvent<PlayerPosition>,
+    conn: Res<StdbConnection<DbConnection>>,
+    local_player: Single<Entity, With<LocalPlayer>>,
+) {
+    let player_entity = local_player.into_inner();
+    for event in events.read() {
+        if event.row.id != conn.identity() {
+            continue;
+        }
+
+        info!("Local player position inserted: {:?}", event.row);
+        commands.entity(player_entity).insert((
+            Transform::from_xyz(event.row.x, event.row.y, event.row.z),
+            MovementReplication {
+                last_position: Vec3::new(event.row.x, event.row.y, event.row.z),
+                timer: Timer::from_seconds(0.1, TimerMode::Repeating),
+                position_threshold_squarred: 0.01,
+            },
+        ));
     }
 }
 

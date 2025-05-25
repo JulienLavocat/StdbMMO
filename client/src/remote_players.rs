@@ -6,7 +6,7 @@ use bevy_health_bar3d::{
     prelude::{BarHeight, BarSettings, ColorScheme, ForegroundColor, Percentage},
 };
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent, StdbConnection};
-use bindings::{DbConnection, Player};
+use bindings::{DbConnection, Player, PlayerPosition};
 use spacetimedb_sdk::Identity;
 
 #[derive(Resource, Default)]
@@ -15,9 +15,12 @@ pub struct RemotePlayersRegistry {
 }
 
 #[derive(Component)]
-pub struct RemotePlayer {
+pub struct RemotePlayerPosition {
     pub target_position: Vec3,
 }
+
+#[derive(Component)]
+pub struct RemotePlayer;
 
 #[derive(Component, Reflect)]
 pub struct Health {
@@ -82,7 +85,7 @@ impl Plugin for RemotePlayersPlugin {
             (on_remote_player_inserted, on_remote_player_deleted).chain(),
         )
         .add_systems(PostUpdate, lerp_remote_players)
-        .add_systems(Update, on_remote_player_updated);
+        .add_systems(Update, on_remote_player_position_updated);
     }
 }
 
@@ -108,16 +111,14 @@ fn on_remote_player_inserted(
                     event.row.id.to_abbreviated_hex()
                 )),
                 Visibility::Visible,
-                Transform::from_xyz(event.row.x, event.row.y, event.row.z),
                 RigidBody::Kinematic,
                 Collider::capsule_endpoints(
                     0.3,
                     Vec3::new(0.0, 0.0, 0.0),
                     Vec3::new(0.0, 1.0, 0.0),
                 ),
-                RemotePlayer {
-                    target_position: Vec3::new(event.row.x, event.row.y, event.row.z),
-                },
+                Transform::default(),
+                RemotePlayer,
                 (
                     Health {
                         current: event.row.health,
@@ -147,21 +148,6 @@ fn on_remote_player_inserted(
     }
 }
 
-fn on_remote_player_updated(
-    mut commands: Commands,
-    registry: ResMut<RemotePlayersRegistry>,
-    mut events: ReadUpdateEvent<Player>,
-) {
-    for event in events.read() {
-        let row = &event.new;
-        if let Some(entity) = registry.get_entity(&row.id) {
-            commands.entity(entity).insert(RemotePlayer {
-                target_position: Vec3::new(row.x, row.y, row.z),
-            });
-        }
-    }
-}
-
 fn on_remote_player_deleted(
     mut commands: Commands,
     mut registry: ResMut<RemotePlayersRegistry>,
@@ -184,7 +170,22 @@ fn on_remote_player_deleted(
     }
 }
 
-fn lerp_remote_players(time: Res<Time>, mut query: Query<(&mut Transform, &RemotePlayer)>) {
+fn on_remote_player_position_updated(
+    mut commands: Commands,
+    registry: ResMut<RemotePlayersRegistry>,
+    mut events: ReadUpdateEvent<PlayerPosition>,
+) {
+    for event in events.read() {
+        let row = &event.new;
+        if let Some(entity) = registry.get_entity(&row.id) {
+            commands.entity(entity).insert(RemotePlayerPosition {
+                target_position: Vec3::new(row.x, row.y, row.z),
+            });
+        }
+    }
+}
+
+fn lerp_remote_players(time: Res<Time>, mut query: Query<(&mut Transform, &RemotePlayerPosition)>) {
     for (mut transform, remote_player) in query.iter_mut() {
         let delta = remote_player.target_position - transform.translation;
         if delta.length() <= 0.01 {

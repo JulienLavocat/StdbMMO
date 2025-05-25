@@ -7,6 +7,8 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 pub mod move_player_reducer;
 pub mod on_connected_reducer;
 pub mod on_disconnected_reducer;
+pub mod player_position_type;
+pub mod player_positions_table;
 pub mod player_type;
 pub mod players_table;
 
@@ -15,6 +17,8 @@ pub use on_connected_reducer::{on_connected, set_flags_for_on_connected, OnConne
 pub use on_disconnected_reducer::{
     on_disconnected, set_flags_for_on_disconnected, OnDisconnectedCallbackId,
 };
+pub use player_position_type::PlayerPosition;
+pub use player_positions_table::*;
 pub use player_type::Player;
 pub use players_table::*;
 
@@ -80,6 +84,7 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct DbUpdate {
+    player_positions: __sdk::TableUpdate<PlayerPosition>,
     players: __sdk::TableUpdate<Player>,
 }
 
@@ -89,6 +94,10 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_update in raw.tables {
             match &table_update.table_name[..] {
+                "player_positions" => {
+                    db_update.player_positions =
+                        player_positions_table::parse_table_update(table_update)?
+                }
                 "players" => db_update.players = players_table::parse_table_update(table_update)?,
 
                 unknown => {
@@ -116,6 +125,9 @@ impl __sdk::DbUpdate for DbUpdate {
     ) -> AppliedDiff<'_> {
         let mut diff = AppliedDiff::default();
 
+        diff.player_positions = cache
+            .apply_diff_to_table::<PlayerPosition>("player_positions", &self.player_positions)
+            .with_updates_by_pk(|row| &row.id);
         diff.players = cache
             .apply_diff_to_table::<Player>("players", &self.players)
             .with_updates_by_pk(|row| &row.id);
@@ -128,6 +140,7 @@ impl __sdk::DbUpdate for DbUpdate {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct AppliedDiff<'r> {
+    player_positions: __sdk::TableAppliedDiff<'r, PlayerPosition>,
     players: __sdk::TableAppliedDiff<'r, Player>,
 }
 
@@ -141,6 +154,11 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         event: &EventContext,
         callbacks: &mut __sdk::DbCallbacks<RemoteModule>,
     ) {
+        callbacks.invoke_table_row_callbacks::<PlayerPosition>(
+            "player_positions",
+            &self.player_positions,
+            event,
+        );
         callbacks.invoke_table_row_callbacks::<Player>("players", &self.players, event);
     }
 }
@@ -717,6 +735,7 @@ impl __sdk::SpacetimeModule for RemoteModule {
     type SubscriptionHandle = SubscriptionHandle;
 
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
+        player_positions_table::register_table(client_cache);
         players_table::register_table(client_cache);
     }
 }
