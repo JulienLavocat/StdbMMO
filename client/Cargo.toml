@@ -4,6 +4,7 @@ version = "0.1.0"
 edition = "2024"
 
 [dependencies]
+bindings = { path = "../bindings" }
 avian3d = "0.3.0"
 bevy = { version = "0.16.0", features = ["dynamic_linking"] }
 bevy-inspector-egui = "0.31.0"

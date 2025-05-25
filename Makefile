@@ -13,7 +13,7 @@ client-release:
 	cargo run -p client --release
 
 bindings:
-	spacetime generate --lang rust --out-dir ./client/src/bindings --project-path server
+	spacetime generate --lang rust --out-dir ./bindings/src/bindings --project-path server
 
 publish:
 	spacetime publish -c -y -p server $(database)

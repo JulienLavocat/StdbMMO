@@ -1711,6 +1711,13 @@ dependencies = [
 ]
 
 [[package]]
+name = "bindings"
+version = "0.1.0"
+dependencies = [
+ "spacetimedb-sdk",
+]
+
+[[package]]
 name = "bit-set"
 version = "0.5.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1816,6 +1823,10 @@ dependencies = [
  "futures-lite",
  "piper",
 ]
+
+[[package]]
+name = "bot"
+version = "0.1.0"
 
 [[package]]
 name = "brotli"
@@ -2008,6 +2019,7 @@ dependencies = [
  "bevy_health_bar3d",
  "bevy_spacetimedb",
  "bevy_third_person_camera",
+ "bindings",
  "leafwing-input-manager",
  "spacetimedb-sdk",
 ]

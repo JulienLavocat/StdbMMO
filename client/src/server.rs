@@ -4,7 +4,7 @@ use bevy_spacetimedb::{
     StdbConnectionErrorEvent, StdbDisconnectedEvent, StdbPlugin, tables,
 };
 
-use crate::bindings::{DbConnection, PlayersTableAccess};
+use bindings::{DbConnection, PlayersTableAccess};
 
 const MODULE_NAME: &str = "ariaonline";
 const STDB_URI: &str = "https://stdb.jlavocat.eu";

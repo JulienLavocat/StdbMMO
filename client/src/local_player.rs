@@ -7,10 +7,10 @@ use bevy_tnua::{
     prelude::{TnuaBuiltinJump, TnuaBuiltinWalk, TnuaController},
 };
 use bevy_tnua_avian3d::TnuaAvian3dSensorShape;
+use bindings::{DbConnection, Player as PlayerTable, move_player};
 use leafwing_input_manager::prelude::ActionState;
 
 use crate::{
-    bindings::{DbConnection, Player as PlayerTable, move_player},
     constants::PLAYER_WALK_SPEED,
     input::{Actions, create_input_map},
 };

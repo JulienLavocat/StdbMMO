@@ -1,3 +1,4 @@
+use crate::constants::PLAYER_WALK_SPEED;
 use avian3d::prelude::{Collider, RigidBody};
 use bevy::{color::palettes::css::BLUE, platform::collections::HashMap, prelude::*};
 use bevy_health_bar3d::{
@@ -5,12 +6,8 @@ use bevy_health_bar3d::{
     prelude::{BarHeight, BarSettings, ColorScheme, ForegroundColor, Percentage},
 };
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent, StdbConnection};
+use bindings::{DbConnection, Player};
 use spacetimedb_sdk::Identity;
-
-use crate::{
-    bindings::{DbConnection, Player},
-    constants::PLAYER_WALK_SPEED,
-};
 
 #[derive(Resource, Default)]
 pub struct RemotePlayersRegistry {

@@ -15,7 +15,6 @@ use remote_players::RemotePlayersPlugin;
 use server::ServerPlugin;
 use world::WorldPlugin;
 
-mod bindings;
 mod constants;
 mod input;
 mod local_player;
