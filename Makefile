@@ -1,6 +1,6 @@
 database=ariaonline
 
-.PHONY: publish client bindings server all
+.PHONY: publish client bindings server bots all 
 
 all: server client
 
@@ -17,3 +17,6 @@ bindings:
 
 publish:
 	spacetime publish -c -y -p server $(database)
+
+bots:
+	cargo run -p bots -- $(NUM)

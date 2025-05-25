@@ -1,7 +1,9 @@
 use avian3d::prelude::*;
 use bevy::prelude::*;
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, StdbConnection};
-use bevy_third_person_camera::{CameraSyncSet, ThirdPersonCamera, ThirdPersonCameraTarget, Zoom};
+use bevy_third_person_camera::{
+    CameraSyncSet, Offset, ThirdPersonCamera, ThirdPersonCameraTarget, Zoom,
+};
 use bevy_tnua::{
     TnuaUserControlsSystemSet,
     prelude::{TnuaBuiltinJump, TnuaBuiltinWalk, TnuaController},
@@ -82,7 +84,8 @@ fn on_player_inserted(
             ThirdPersonCamera {
                 cursor_lock_key: KeyCode::Escape,
                 sensitivity: Vec2::new(2.0, 2.0),
-                zoom: Zoom::new(2.0, 10.0),
+                zoom: Zoom::new(2.0, 20.0),
+                offset: Offset::new(0.0, 2.0),
                 ..Default::default()
             },
         ));

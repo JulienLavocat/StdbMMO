@@ -9,6 +9,8 @@ use bevy_third_person_camera::ThirdPersonCameraPlugin;
 use bevy_tnua::prelude::TnuaControllerPlugin;
 use bevy_tnua_avian3d::TnuaAvian3dPlugin;
 use input::Actions;
+use iyes_perf_ui::PerfUiPlugin;
+use iyes_perf_ui::prelude::PerfUiDefaultEntries;
 use leafwing_input_manager::plugin::InputManagerPlugin;
 use local_player::LocalPlayerPlugin;
 use remote_players::RemotePlayersPlugin;
@@ -29,6 +31,7 @@ fn main() {
                 .set(WindowPlugin {
                     primary_window: Some(Window {
                         title: "Aria Online".to_string(),
+                        present_mode: bevy::window::PresentMode::Immediate,
                         mode: WindowMode::Windowed,
                         // mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
                         ..Default::default()
@@ -41,10 +44,15 @@ fn main() {
                     ..default()
                 }),
         )
+        .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
+        .add_plugins(bevy::diagnostic::EntityCountDiagnosticsPlugin)
+        .add_plugins(bevy::diagnostic::SystemInformationDiagnosticsPlugin)
+        .add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin)
         .add_plugins(EguiPlugin {
             enable_multipass_for_primary_context: true,
         })
         .add_plugins((
+            PerfUiPlugin,
             WorldInspectorPlugin::new(),
             InputManagerPlugin::<Actions>::default(),
             PhysicsPlugins::default(),
@@ -55,5 +63,10 @@ fn main() {
         ))
         .add_plugins(ServerPlugin)
         .add_plugins((WorldPlugin, LocalPlayerPlugin, RemotePlayersPlugin))
+        .add_systems(Startup, startup)
         .run();
+}
+
+fn startup(mut commands: Commands) {
+    commands.spawn(PerfUiDefaultEntries::default());
 }
