@@ -34,12 +34,14 @@ fn on_disconnected(ctx: &ReducerContext) {
     let position = ctx.db.players_positions().id().find(ctx.sender).unwrap();
 
     player.online = false;
-    // Save the player position before removing it
+    // Save the player's data to cold storage
     player.x = position.x;
     player.y = position.y;
     player.z = position.z;
 
     ctx.db.players().id().update(player);
+
+    // Clear the player's hot data
     ctx.db.players_windows().id().delete(ctx.sender);
     ctx.db.players_positions().id().delete(ctx.sender);
     ctx.db.players_positions_lr().id().delete(ctx.sender);

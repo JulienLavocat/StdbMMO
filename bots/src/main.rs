@@ -9,6 +9,7 @@ const MODULE_NAME: &str = "ariaonline";
 const STDB_URI: &str = "https://stdb.jlavocat.eu";
 // const STDB_URI: &str = "https://maincloud.spacetimedb.com";
 const MOVE_SPEED: f32 = 0.4;
+const BOUNDS: f32 = 128.0; // Movement bounds for the bots
 
 #[tokio::main]
 async fn main() {
@@ -46,7 +47,7 @@ async fn run_bot(id: usize) {
         .expect("Failed to create SpacetimeDB connection");
 
     let mut current_position: (f32, f32) = (0.0, 0.0);
-    let mut goal = (random_range(-40.0..40.0), random_range(-40.0..40.0));
+    let mut goal = (random_range(-BOUNDS..BOUNDS), random_range(-BOUNDS..BOUNDS));
     let mut last_goal_update = Instant::now();
     let mut move_interval = interval(Duration::from_millis(100));
 
@@ -62,7 +63,7 @@ async fn run_bot(id: usize) {
             _ = move_interval.tick() => {
                 if last_goal_update.elapsed().as_secs_f32() > 5.0 {
                     last_goal_update = Instant::now();
-                    goal = (random_range(-40.0..40.0), random_range(-40.0..40.0));
+                    goal = (random_range(-BOUNDS..BOUNDS), random_range(-BOUNDS..BOUNDS));
                 }
 
                 let dx = goal.0 - current_position.0;
