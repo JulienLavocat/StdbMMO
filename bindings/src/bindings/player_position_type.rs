@@ -11,6 +11,7 @@ pub struct PlayerPosition {
     pub x: f32,
     pub y: f32,
     pub z: f32,
+    pub update_count: u8,
 }
 
 impl __sdk::InModule for PlayerPosition {

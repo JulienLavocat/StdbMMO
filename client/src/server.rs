@@ -4,11 +4,13 @@ use bevy_spacetimedb::{
     StdbConnectionErrorEvent, StdbDisconnectedEvent, StdbPlugin, tables,
 };
 
-use bindings::{DbConnection, PlayerPositionsTableAccess, PlayersTableAccess};
+use bindings::{
+    DbConnection, PlayersPositionsLrTableAccess, PlayersPositionsTableAccess, PlayersTableAccess,
+};
 
 const MODULE_NAME: &str = "ariaonline";
-const STDB_URI: &str = "https://maincloud.spacetimedb.com";
-// const STDB_URI: &str = "https://stdb.jlavocat.eu";
+// const STDB_URI: &str = "https://maincloud.spacetimedb.com";
+const STDB_URI: &str = "https://stdb.jlavocat.eu";
 
 pub struct ServerPlugin;
 
@@ -39,7 +41,7 @@ impl Plugin for ServerPlugin {
                 conn
             })
             .with_events(|plugin, app, db, _| {
-                tables!(players, player_positions);
+                tables!(players, players_positions_lr, players_positions);
             });
         app.add_plugins(plugin);
 
@@ -53,9 +55,11 @@ fn on_connected(mut events: ReadStdbConnectedEvent, conn: Res<StdbConnection<DbC
         info!("Connected to SpacetimeDB");
 
         let queries = [
-            "SELECT * FROM players WHERE online = true",
-            "SELECT * FROM player_positions",
+            "SELECT * FROM players",
+            "SELECT * FROM players_positions",
+            "SELECT * FROM players_positions_lr",
         ];
+
         conn.subscribe()
             .on_applied(|_| info!("Subscribed to players"))
             .on_error(|_, err| {

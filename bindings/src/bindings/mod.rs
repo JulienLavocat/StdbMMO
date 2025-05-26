@@ -8,9 +8,15 @@ pub mod move_player_reducer;
 pub mod on_connected_reducer;
 pub mod on_disconnected_reducer;
 pub mod player_position_type;
-pub mod player_positions_table;
 pub mod player_type;
+pub mod player_window_type;
+pub mod player_window_update_type;
+pub mod players_positions_lr_table;
+pub mod players_positions_table;
 pub mod players_table;
+pub mod players_window_updates_table;
+pub mod players_windows_table;
+pub mod update_players_windows_reducer;
 
 pub use move_player_reducer::{move_player, set_flags_for_move_player, MovePlayerCallbackId};
 pub use on_connected_reducer::{on_connected, set_flags_for_on_connected, OnConnectedCallbackId};
@@ -18,9 +24,17 @@ pub use on_disconnected_reducer::{
     on_disconnected, set_flags_for_on_disconnected, OnDisconnectedCallbackId,
 };
 pub use player_position_type::PlayerPosition;
-pub use player_positions_table::*;
 pub use player_type::Player;
+pub use player_window_type::PlayerWindow;
+pub use player_window_update_type::PlayerWindowUpdate;
+pub use players_positions_lr_table::*;
+pub use players_positions_table::*;
 pub use players_table::*;
+pub use players_window_updates_table::*;
+pub use players_windows_table::*;
+pub use update_players_windows_reducer::{
+    set_flags_for_update_players_windows, update_players_windows, UpdatePlayersWindowsCallbackId,
+};
 
 #[derive(Clone, PartialEq, Debug)]
 
@@ -33,6 +47,7 @@ pub enum Reducer {
     MovePlayer { x: f32, y: f32, z: f32 },
     OnConnected,
     OnDisconnected,
+    UpdatePlayersWindows { row: PlayerWindowUpdate },
 }
 
 impl __sdk::InModule for Reducer {
@@ -45,6 +60,7 @@ impl __sdk::Reducer for Reducer {
             Reducer::MovePlayer { .. } => "move_player",
             Reducer::OnConnected => "on_connected",
             Reducer::OnDisconnected => "on_disconnected",
+            Reducer::UpdatePlayersWindows { .. } => "update_players_windows",
         }
     }
 }
@@ -70,6 +86,10 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
                 on_disconnected_reducer::OnDisconnectedArgs,
             >("on_disconnected", &value.args)?
             .into()),
+            "update_players_windows" => Ok(__sdk::parse_reducer_args::<
+                update_players_windows_reducer::UpdatePlayersWindowsArgs,
+            >("update_players_windows", &value.args)?
+            .into()),
             unknown => {
                 Err(
                     __sdk::InternalError::unknown_name("reducer", unknown, "ReducerCallInfo")
@@ -84,8 +104,11 @@ impl TryFrom<__ws::ReducerCallInfo<__ws::BsatnFormat>> for Reducer {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct DbUpdate {
-    player_positions: __sdk::TableUpdate<PlayerPosition>,
     players: __sdk::TableUpdate<Player>,
+    players_positions: __sdk::TableUpdate<PlayerPosition>,
+    players_positions_lr: __sdk::TableUpdate<PlayerPosition>,
+    players_window_updates: __sdk::TableUpdate<PlayerWindowUpdate>,
+    players_windows: __sdk::TableUpdate<PlayerWindow>,
 }
 
 impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
@@ -94,11 +117,23 @@ impl TryFrom<__ws::DatabaseUpdate<__ws::BsatnFormat>> for DbUpdate {
         let mut db_update = DbUpdate::default();
         for table_update in raw.tables {
             match &table_update.table_name[..] {
-                "player_positions" => {
-                    db_update.player_positions =
-                        player_positions_table::parse_table_update(table_update)?
-                }
                 "players" => db_update.players = players_table::parse_table_update(table_update)?,
+                "players_positions" => {
+                    db_update.players_positions =
+                        players_positions_table::parse_table_update(table_update)?
+                }
+                "players_positions_lr" => {
+                    db_update.players_positions_lr =
+                        players_positions_lr_table::parse_table_update(table_update)?
+                }
+                "players_window_updates" => {
+                    db_update.players_window_updates =
+                        players_window_updates_table::parse_table_update(table_update)?
+                }
+                "players_windows" => {
+                    db_update.players_windows =
+                        players_windows_table::parse_table_update(table_update)?
+                }
 
                 unknown => {
                     return Err(__sdk::InternalError::unknown_name(
@@ -125,11 +160,26 @@ impl __sdk::DbUpdate for DbUpdate {
     ) -> AppliedDiff<'_> {
         let mut diff = AppliedDiff::default();
 
-        diff.player_positions = cache
-            .apply_diff_to_table::<PlayerPosition>("player_positions", &self.player_positions)
-            .with_updates_by_pk(|row| &row.id);
         diff.players = cache
             .apply_diff_to_table::<Player>("players", &self.players)
+            .with_updates_by_pk(|row| &row.id);
+        diff.players_positions = cache
+            .apply_diff_to_table::<PlayerPosition>("players_positions", &self.players_positions)
+            .with_updates_by_pk(|row| &row.id);
+        diff.players_positions_lr = cache
+            .apply_diff_to_table::<PlayerPosition>(
+                "players_positions_lr",
+                &self.players_positions_lr,
+            )
+            .with_updates_by_pk(|row| &row.id);
+        diff.players_window_updates = cache
+            .apply_diff_to_table::<PlayerWindowUpdate>(
+                "players_window_updates",
+                &self.players_window_updates,
+            )
+            .with_updates_by_pk(|row| &row.id);
+        diff.players_windows = cache
+            .apply_diff_to_table::<PlayerWindow>("players_windows", &self.players_windows)
             .with_updates_by_pk(|row| &row.id);
 
         diff
@@ -140,8 +190,11 @@ impl __sdk::DbUpdate for DbUpdate {
 #[allow(non_snake_case)]
 #[doc(hidden)]
 pub struct AppliedDiff<'r> {
-    player_positions: __sdk::TableAppliedDiff<'r, PlayerPosition>,
     players: __sdk::TableAppliedDiff<'r, Player>,
+    players_positions: __sdk::TableAppliedDiff<'r, PlayerPosition>,
+    players_positions_lr: __sdk::TableAppliedDiff<'r, PlayerPosition>,
+    players_window_updates: __sdk::TableAppliedDiff<'r, PlayerWindowUpdate>,
+    players_windows: __sdk::TableAppliedDiff<'r, PlayerWindow>,
 }
 
 impl __sdk::InModule for AppliedDiff<'_> {
@@ -154,12 +207,27 @@ impl<'r> __sdk::AppliedDiff<'r> for AppliedDiff<'r> {
         event: &EventContext,
         callbacks: &mut __sdk::DbCallbacks<RemoteModule>,
     ) {
+        callbacks.invoke_table_row_callbacks::<Player>("players", &self.players, event);
         callbacks.invoke_table_row_callbacks::<PlayerPosition>(
-            "player_positions",
-            &self.player_positions,
+            "players_positions",
+            &self.players_positions,
             event,
         );
-        callbacks.invoke_table_row_callbacks::<Player>("players", &self.players, event);
+        callbacks.invoke_table_row_callbacks::<PlayerPosition>(
+            "players_positions_lr",
+            &self.players_positions_lr,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<PlayerWindowUpdate>(
+            "players_window_updates",
+            &self.players_window_updates,
+            event,
+        );
+        callbacks.invoke_table_row_callbacks::<PlayerWindow>(
+            "players_windows",
+            &self.players_windows,
+            event,
+        );
     }
 }
 
@@ -735,7 +803,10 @@ impl __sdk::SpacetimeModule for RemoteModule {
     type SubscriptionHandle = SubscriptionHandle;
 
     fn register_tables(client_cache: &mut __sdk::ClientCache<Self>) {
-        player_positions_table::register_table(client_cache);
         players_table::register_table(client_cache);
+        players_positions_table::register_table(client_cache);
+        players_positions_lr_table::register_table(client_cache);
+        players_window_updates_table::register_table(client_cache);
+        players_windows_table::register_table(client_cache);
     }
 }

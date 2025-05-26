@@ -5,42 +5,42 @@
 use super::player_position_type::PlayerPosition;
 use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 
-/// Table handle for the table `player_positions`.
+/// Table handle for the table `players_positions`.
 ///
-/// Obtain a handle from the [`PlayerPositionsTableAccess::player_positions`] method on [`super::RemoteTables`],
-/// like `ctx.db.player_positions()`.
+/// Obtain a handle from the [`PlayersPositionsTableAccess::players_positions`] method on [`super::RemoteTables`],
+/// like `ctx.db.players_positions()`.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.player_positions().on_insert(...)`.
-pub struct PlayerPositionsTableHandle<'ctx> {
+/// like `ctx.db.players_positions().on_insert(...)`.
+pub struct PlayersPositionsTableHandle<'ctx> {
     imp: __sdk::TableHandle<PlayerPosition>,
     ctx: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
 #[allow(non_camel_case_types)]
-/// Extension trait for access to the table `player_positions`.
+/// Extension trait for access to the table `players_positions`.
 ///
 /// Implemented for [`super::RemoteTables`].
-pub trait PlayerPositionsTableAccess {
+pub trait PlayersPositionsTableAccess {
     #[allow(non_snake_case)]
-    /// Obtain a [`PlayerPositionsTableHandle`], which mediates access to the table `player_positions`.
-    fn player_positions(&self) -> PlayerPositionsTableHandle<'_>;
+    /// Obtain a [`PlayersPositionsTableHandle`], which mediates access to the table `players_positions`.
+    fn players_positions(&self) -> PlayersPositionsTableHandle<'_>;
 }
 
-impl PlayerPositionsTableAccess for super::RemoteTables {
-    fn player_positions(&self) -> PlayerPositionsTableHandle<'_> {
-        PlayerPositionsTableHandle {
-            imp: self.imp.get_table::<PlayerPosition>("player_positions"),
+impl PlayersPositionsTableAccess for super::RemoteTables {
+    fn players_positions(&self) -> PlayersPositionsTableHandle<'_> {
+        PlayersPositionsTableHandle {
+            imp: self.imp.get_table::<PlayerPosition>("players_positions"),
             ctx: std::marker::PhantomData,
         }
     }
 }
 
-pub struct PlayerPositionsInsertCallbackId(__sdk::CallbackId);
-pub struct PlayerPositionsDeleteCallbackId(__sdk::CallbackId);
+pub struct PlayersPositionsInsertCallbackId(__sdk::CallbackId);
+pub struct PlayersPositionsDeleteCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::Table for PlayerPositionsTableHandle<'ctx> {
+impl<'ctx> __sdk::Table for PlayersPositionsTableHandle<'ctx> {
     type Row = PlayerPosition;
     type EventContext = super::EventContext;
 
@@ -51,51 +51,51 @@ impl<'ctx> __sdk::Table for PlayerPositionsTableHandle<'ctx> {
         self.imp.iter()
     }
 
-    type InsertCallbackId = PlayerPositionsInsertCallbackId;
+    type InsertCallbackId = PlayersPositionsInsertCallbackId;
 
     fn on_insert(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> PlayerPositionsInsertCallbackId {
-        PlayerPositionsInsertCallbackId(self.imp.on_insert(Box::new(callback)))
+    ) -> PlayersPositionsInsertCallbackId {
+        PlayersPositionsInsertCallbackId(self.imp.on_insert(Box::new(callback)))
     }
 
-    fn remove_on_insert(&self, callback: PlayerPositionsInsertCallbackId) {
+    fn remove_on_insert(&self, callback: PlayersPositionsInsertCallbackId) {
         self.imp.remove_on_insert(callback.0)
     }
 
-    type DeleteCallbackId = PlayerPositionsDeleteCallbackId;
+    type DeleteCallbackId = PlayersPositionsDeleteCallbackId;
 
     fn on_delete(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row) + Send + 'static,
-    ) -> PlayerPositionsDeleteCallbackId {
-        PlayerPositionsDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
+    ) -> PlayersPositionsDeleteCallbackId {
+        PlayersPositionsDeleteCallbackId(self.imp.on_delete(Box::new(callback)))
     }
 
-    fn remove_on_delete(&self, callback: PlayerPositionsDeleteCallbackId) {
+    fn remove_on_delete(&self, callback: PlayersPositionsDeleteCallbackId) {
         self.imp.remove_on_delete(callback.0)
     }
 }
 
 #[doc(hidden)]
 pub(super) fn register_table(client_cache: &mut __sdk::ClientCache<super::RemoteModule>) {
-    let _table = client_cache.get_or_make_table::<PlayerPosition>("player_positions");
+    let _table = client_cache.get_or_make_table::<PlayerPosition>("players_positions");
     _table.add_unique_constraint::<__sdk::Identity>("id", |row| &row.id);
 }
-pub struct PlayerPositionsUpdateCallbackId(__sdk::CallbackId);
+pub struct PlayersPositionsUpdateCallbackId(__sdk::CallbackId);
 
-impl<'ctx> __sdk::TableWithPrimaryKey for PlayerPositionsTableHandle<'ctx> {
-    type UpdateCallbackId = PlayerPositionsUpdateCallbackId;
+impl<'ctx> __sdk::TableWithPrimaryKey for PlayersPositionsTableHandle<'ctx> {
+    type UpdateCallbackId = PlayersPositionsUpdateCallbackId;
 
     fn on_update(
         &self,
         callback: impl FnMut(&Self::EventContext, &Self::Row, &Self::Row) + Send + 'static,
-    ) -> PlayerPositionsUpdateCallbackId {
-        PlayerPositionsUpdateCallbackId(self.imp.on_update(Box::new(callback)))
+    ) -> PlayersPositionsUpdateCallbackId {
+        PlayersPositionsUpdateCallbackId(self.imp.on_update(Box::new(callback)))
     }
 
-    fn remove_on_update(&self, callback: PlayerPositionsUpdateCallbackId) {
+    fn remove_on_update(&self, callback: PlayersPositionsUpdateCallbackId) {
         self.imp.remove_on_update(callback.0)
     }
 }
@@ -111,29 +111,29 @@ pub(super) fn parse_table_update(
     })
 }
 
-/// Access to the `id` unique index on the table `player_positions`,
+/// Access to the `id` unique index on the table `players_positions`,
 /// which allows point queries on the field of the same name
-/// via the [`PlayerPositionsIdUnique::find`] method.
+/// via the [`PlayersPositionsIdUnique::find`] method.
 ///
 /// Users are encouraged not to explicitly reference this type,
 /// but to directly chain method calls,
-/// like `ctx.db.player_positions().id().find(...)`.
-pub struct PlayerPositionsIdUnique<'ctx> {
+/// like `ctx.db.players_positions().id().find(...)`.
+pub struct PlayersPositionsIdUnique<'ctx> {
     imp: __sdk::UniqueConstraintHandle<PlayerPosition, __sdk::Identity>,
     phantom: std::marker::PhantomData<&'ctx super::RemoteTables>,
 }
 
-impl<'ctx> PlayerPositionsTableHandle<'ctx> {
-    /// Get a handle on the `id` unique index on the table `player_positions`.
-    pub fn id(&self) -> PlayerPositionsIdUnique<'ctx> {
-        PlayerPositionsIdUnique {
+impl<'ctx> PlayersPositionsTableHandle<'ctx> {
+    /// Get a handle on the `id` unique index on the table `players_positions`.
+    pub fn id(&self) -> PlayersPositionsIdUnique<'ctx> {
+        PlayersPositionsIdUnique {
             imp: self.imp.get_unique_constraint::<__sdk::Identity>("id"),
             phantom: std::marker::PhantomData,
         }
     }
 }
 
-impl<'ctx> PlayerPositionsIdUnique<'ctx> {
+impl<'ctx> PlayersPositionsIdUnique<'ctx> {
     /// Find the subscribed row whose `id` column value is equal to `col_val`,
     /// if such a row is present in the client cache.
     pub fn find(&self, col_val: &__sdk::Identity) -> Option<PlayerPosition> {

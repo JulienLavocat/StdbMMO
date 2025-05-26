@@ -6,9 +6,9 @@ use spacetimedb_sdk::DbContext;
 use tokio::time::{interval, sleep};
 
 const MODULE_NAME: &str = "ariaonline";
-// const STDB_URI: &str = "https://stdb.jlavocat.eu";
-const STDB_URI: &str = "https://maincloud.spacetimedb.com";
-const MOVE_SPEED: f32 = 0.25;
+const STDB_URI: &str = "https://stdb.jlavocat.eu";
+// const STDB_URI: &str = "https://maincloud.spacetimedb.com";
+const MOVE_SPEED: f32 = 0.4;
 
 #[tokio::main]
 async fn main() {
@@ -39,7 +39,7 @@ async fn run_bot(id: usize) {
         .on_connect(move |ctx, _id, _c| {
             println!("[{}] Connected to SpacetimeDB as {}", id, ctx.identity());
             ctx.subscription_builder()
-                .subscribe("SELECT * FROM player_positions");
+                .subscribe(["SELECT * FROM players_positions", "SELECT * FROM players"]);
         })
         .with_uri(STDB_URI)
         .build()

@@ -6,7 +6,7 @@ use bevy_health_bar3d::{
     prelude::{BarHeight, BarSettings, ColorScheme, ForegroundColor, Percentage},
 };
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent, StdbConnection};
-use bindings::{DbConnection, Player, PlayerPosition};
+use bindings::{DbConnection, PlayerPosition, PlayersTableAccess};
 use spacetimedb_sdk::Identity;
 
 #[derive(Resource, Default)]
@@ -82,17 +82,21 @@ impl Plugin for RemotePlayersPlugin {
         )
         .add_systems(
             PreUpdate,
-            (on_remote_player_inserted, on_remote_player_deleted).chain(),
+            (
+                on_remote_player_position_inserted,
+                on_remote_player_position_deleted,
+            )
+                .chain(),
         )
         .add_systems(PostUpdate, lerp_remote_players)
         .add_systems(Update, on_remote_player_position_updated);
     }
 }
 
-fn on_remote_player_inserted(
+fn on_remote_player_position_inserted(
     mut commands: Commands,
     mut registry: ResMut<RemotePlayersRegistry>,
-    mut events: ReadInsertEvent<Player>,
+    mut events: ReadInsertEvent<PlayerPosition>,
     asset_server: Res<AssetServer>,
     conn: Res<StdbConnection<DbConnection>>,
 ) {
@@ -101,15 +105,14 @@ fn on_remote_player_inserted(
             continue;
         }
 
-        info!("Remote player inserted: {:?}", event.row);
+        // info!("Remote player position inserted: {:?}", event.row);
         let model = asset_server.load("character.glb#Scene0");
+
+        let player = conn.db().players().id().find(&conn.identity()).unwrap();
 
         let entity = commands
             .spawn((
-                Name::new(format!(
-                    "RemotePlayer#{}",
-                    event.row.id.to_abbreviated_hex()
-                )),
+                Name::new(format!("RemotePlayer#{}", player.id.to_abbreviated_hex())),
                 Visibility::Visible,
                 RigidBody::Kinematic,
                 Collider::capsule_endpoints(
@@ -117,12 +120,12 @@ fn on_remote_player_inserted(
                     Vec3::new(0.0, 0.0, 0.0),
                     Vec3::new(0.0, 1.0, 0.0),
                 ),
-                Transform::default(),
+                Transform::from_xyz(event.row.x, event.row.y, event.row.z),
                 RemotePlayer,
                 (
                     Health {
-                        current: event.row.health,
-                        max: event.row.max_health,
+                        current: player.health,
+                        max: player.max_health,
                     },
                     BarSettings::<Health> {
                         offset: 1.6,
@@ -131,8 +134,8 @@ fn on_remote_player_inserted(
                         ..default()
                     },
                     Mana {
-                        current: event.row.mana,
-                        max: event.row.max_mana,
+                        current: player.mana,
+                        max: player.max_mana,
                     },
                     BarSettings::<Mana> {
                         offset: 1.5,
@@ -144,14 +147,15 @@ fn on_remote_player_inserted(
                 children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
             ))
             .id();
+
         registry.register(event.row.id, entity);
     }
 }
 
-fn on_remote_player_deleted(
+fn on_remote_player_position_deleted(
     mut commands: Commands,
     mut registry: ResMut<RemotePlayersRegistry>,
-    mut events: ReadDeleteEvent<Player>,
+    mut events: ReadDeleteEvent<PlayerPosition>,
     conn: Res<StdbConnection<DbConnection>>,
 ) {
     for event in events.read() {
@@ -159,13 +163,11 @@ fn on_remote_player_deleted(
             continue;
         }
 
-        info!("Remote player deleted: {:?}", event.row);
+        // info!("Remote player position deleted: {:?}", event.row);
 
         if let Some(remote_player_entity) = registry.get_entity(&event.row.id) {
             commands.entity(remote_player_entity).despawn();
             registry.remove(&event.row.id);
-        } else {
-            warn!("Remote player entity not found for ID: {}", event.row.id);
         }
     }
 }
