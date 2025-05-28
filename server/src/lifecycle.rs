@@ -34,6 +34,7 @@ fn on_disconnected(ctx: &ReducerContext) {
     let position = ctx.db.players_positions().id().find(ctx.sender).unwrap();
 
     player.online = false;
+
     // Save the player's data to cold storage
     player.x = position.x;
     player.y = position.y;

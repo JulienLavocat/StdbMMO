@@ -1,3 +1,4 @@
+use animation_link::AnimationEntityLinkPlugin;
 use avian3d::PhysicsPlugins;
 use avian3d::prelude::PhysicsDebugPlugin;
 use bevy::log::{DEFAULT_FILTER, LogPlugin};
@@ -17,6 +18,7 @@ use remote_players::RemotePlayersPlugin;
 use server::ServerPlugin;
 use world::WorldPlugin;
 
+mod animation_link;
 mod constants;
 mod input;
 mod local_player;
@@ -60,6 +62,7 @@ fn main() {
             TnuaControllerPlugin::new(FixedUpdate),
             TnuaAvian3dPlugin::new(FixedUpdate),
             ThirdPersonCameraPlugin,
+            AnimationEntityLinkPlugin,
         ))
         .add_plugins(ServerPlugin)
         .add_plugins((WorldPlugin, LocalPlayerPlugin, RemotePlayersPlugin))
