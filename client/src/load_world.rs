@@ -7,7 +7,7 @@ use bevy_asset_loader::{
 use crate::state::GameState;
 
 #[derive(AssetCollection, Resource)]
-pub struct ModelAssets {
+pub struct CharacterAssets {
     #[asset(path = "character.glb#Scene0")]
     pub character_scene: Handle<Scene>,
     #[asset(path = "character.glb")]
@@ -21,8 +21,7 @@ impl Plugin for LoadWorldPlugin {
         app.add_loading_state(
             LoadingState::new(GameState::LoadingWorld)
                 .continue_to_state(GameState::InGame)
-                .load_collection::<ModelAssets>(),
+                .load_collection::<CharacterAssets>(),
         );
     }
 }
-

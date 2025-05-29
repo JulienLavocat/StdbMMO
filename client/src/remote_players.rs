@@ -8,7 +8,7 @@ use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent, StdbCo
 use bindings::{DbConnection, PlayerPosition, PlayersTableAccess};
 use spacetimedb_sdk::Identity;
 
-use crate::{local_player::PLAYER_WALK_SPEED, state::InGameSet};
+use crate::{load_world::CharacterAssets, local_player::PLAYER_WALK_SPEED, state::InGameSet};
 
 #[derive(Resource, Default)]
 pub struct RemotePlayersRegistry {
@@ -99,7 +99,7 @@ fn on_remote_player_position_inserted(
     mut commands: Commands,
     mut registry: ResMut<RemotePlayersRegistry>,
     mut events: ReadInsertEvent<PlayerPosition>,
-    asset_server: Res<AssetServer>,
+    models: Res<CharacterAssets>,
     conn: Res<StdbConnection<DbConnection>>,
 ) {
     for event in events.read() {
@@ -108,8 +108,6 @@ fn on_remote_player_position_inserted(
         }
 
         // info!("Remote player position inserted: {:?}", event.row);
-        let model = asset_server.load("character.glb#Scene0");
-
         let player = conn.db().players().id().find(&conn.identity()).unwrap();
 
         let entity = commands
@@ -146,7 +144,10 @@ fn on_remote_player_position_inserted(
                         ..default()
                     },
                 ),
-                children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
+                children![(
+                    SceneRoot(models.character_scene.clone()),
+                    Transform::from_xyz(0.0, -0.5, 0.0)
+                )],
             ))
             .id();
 

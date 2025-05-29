@@ -7,9 +7,8 @@ use bevy_tnua::{
 
 use super::LocalPlayer;
 use crate::{
-    animation_link::AnimationEntityLink,
-    local_player::{PLAYER_WALK_SPEED, PlayerGltfHandle},
-    state::InGameSet,
+    animation_link::AnimationEntityLink, load_world::CharacterAssets,
+    local_player::PLAYER_WALK_SPEED, state::InGameSet,
 };
 
 #[derive(Resource)]
@@ -41,14 +40,11 @@ impl Plugin for PlayerAnimationsPlugin {
 fn prepare_animations(
     mut commands: Commands,
     mut animation_graph: ResMut<Assets<AnimationGraph>>,
-    handle: Option<Res<PlayerGltfHandle>>,
+    character_assets: Res<CharacterAssets>,
     player_animation_entity: Single<&AnimationEntityLink, With<LocalPlayer>>,
     gtfs_assets: Res<Assets<Gltf>>,
 ) {
-    let Some(handle) = handle else {
-        return;
-    };
-    let Some(gltf_model) = gtfs_assets.get(&handle.0) else {
+    let Some(gltf_model) = gtfs_assets.get(&character_assets.character) else {
         return;
     };
 
@@ -72,8 +68,6 @@ fn prepare_animations(
     commands
         .entity(player_animation_entity.0)
         .insert(AnimationGraphHandle(animation_graph.add(graph)));
-
-    commands.remove_resource::<PlayerGltfHandle>();
 }
 
 fn handle_animating(

@@ -1,6 +1,7 @@
 use std::time::{Duration, Instant};
 
 use bindings::{DbConnection, move_player};
+use clap::Parser;
 use rand::random_range;
 use spacetimedb_sdk::DbContext;
 use tokio::time::{interval, sleep};
@@ -11,17 +12,26 @@ const STDB_URI: &str = "https://stdb.jlavocat.eu";
 const MOVE_SPEED: f32 = 0.4;
 const BOUNDS: f32 = 128.0; // Movement bounds for the bots
 
+#[derive(Parser, Debug, Clone, Copy)]
+struct Args {
+    /// Number of bot threads to run
+    num_bots: usize,
+    #[clap(short, default_value = "false")]
+    /// If true, bots will not subscribe to the database
+    no_subscribe: bool,
+}
+
 #[tokio::main]
 async fn main() {
-    let args: Vec<String> = std::env::args().collect();
-    let num_bots: usize = args.get(1).and_then(|s| s.parse().ok()).unwrap_or(10);
+    let args = Args::parse();
+    let num_bots = args.num_bots;
 
-    println!("Starting {} bot threads", num_bots);
+    println!("Running with arguments: {:?}", args);
 
     let mut handles = vec![];
 
     for id in 0..num_bots {
-        let handle = tokio::spawn(run_bot(id));
+        let handle = tokio::spawn(run_bot(id, args));
         handles.push(handle);
     }
 
@@ -30,17 +40,27 @@ async fn main() {
     }
 }
 
-async fn run_bot(id: usize) {
-    println!("[{}] Starting bot thread", id);
-    let delay = id * 50; // stagger start times
+async fn run_bot(id: usize, args: Args) {
+    let delay = id * 25;
     sleep(Duration::from_millis(delay as u64)).await;
 
     let conn = DbConnection::builder()
         .with_module_name(MODULE_NAME)
         .on_connect(move |ctx, _id, _c| {
             println!("[{}] Connected to SpacetimeDB as {}", id, ctx.identity());
+            if args.no_subscribe {
+                return;
+            }
+
             ctx.subscription_builder()
-                .subscribe(["SELECT * FROM players_positions", "SELECT * FROM players"]);
+                .on_error(move |_, err| {
+                    panic!("[{}] Subscription error: {}", id, err);
+                })
+                .subscribe([
+                    "SELECT * FROM players",
+                    "SELECT * FROM players_positions",
+                    "SELECT * FROM players_positions_lr",
+                ]);
         })
         .with_uri(STDB_URI)
         .build()

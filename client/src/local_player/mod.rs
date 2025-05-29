@@ -15,7 +15,7 @@ mod animations;
 mod controls;
 mod movement_replication;
 
-use crate::{input::create_input_map, state::InGameSet};
+use crate::{input::create_input_map, load_world::CharacterAssets, state::InGameSet};
 
 pub const PLAYER_WALK_SPEED: f32 = 4.0;
 pub const PLAYER_RUN_SPEED: f32 = 10.0;
@@ -26,9 +26,6 @@ pub struct LocalPlayer;
 
 #[derive(Component)]
 pub struct LocalPlayerCamera;
-
-#[derive(Resource)]
-struct PlayerGltfHandle(Handle<Gltf>);
 
 pub struct LocalPlayerPlugin;
 
@@ -58,7 +55,7 @@ impl Plugin for LocalPlayerPlugin {
 fn on_player_inserted(
     mut commands: Commands,
     mut events: ReadInsertEvent<PlayerTable>,
-    asset_server: Res<AssetServer>,
+    character_assets: Res<CharacterAssets>,
     conn: Res<StdbConnection<DbConnection>>,
 ) {
     for event in events.read() {
@@ -66,10 +63,7 @@ fn on_player_inserted(
             continue;
         }
 
-        commands.insert_resource(PlayerGltfHandle(asset_server.load("character.glb")));
-
         info!("Local player inserted: {:?}", event.row);
-        let model = asset_server.load("character.glb#Scene0");
 
         commands.spawn((
             LocalPlayer,
@@ -89,7 +83,10 @@ fn on_player_inserted(
                 timer: Timer::from_seconds(0.1, TimerMode::Repeating),
                 position_threshold_squarred: 0.01,
             },
-            children![(SceneRoot(model), Transform::from_xyz(0.0, -0.5, 0.0))],
+            children![(
+                SceneRoot(character_assets.character_scene.clone()),
+                Transform::from_xyz(0.0, -0.5, 0.0)
+            )],
         ));
 
         commands.spawn((

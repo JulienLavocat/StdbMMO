@@ -8,7 +8,7 @@ use bindings::{
     DbConnection, PlayersPositionsLrTableAccess, PlayersPositionsTableAccess, PlayersTableAccess,
 };
 
-use crate::state::InGameSet;
+use crate::state::GameState;
 
 const MODULE_NAME: &str = "ariaonline";
 // const STDB_URI: &str = "https://maincloud.spacetimedb.com";
@@ -47,27 +47,15 @@ impl Plugin for ServerPlugin {
             });
         app.add_plugins(plugin);
 
-        app.add_systems(First, on_connected.in_set(InGameSet))
-            .add_systems(Last, on_disconnected.in_set(InGameSet));
+        app.add_systems(First, on_connected)
+            .add_systems(Last, on_disconnected)
+            .add_systems(OnEnter(GameState::InGame), subscribe_to_world);
     }
 }
 
-fn on_connected(mut events: ReadStdbConnectedEvent, conn: Res<StdbConnection<DbConnection>>) {
+fn on_connected(mut events: ReadStdbConnectedEvent) {
     for _ in events.read() {
         info!("Connected to SpacetimeDB");
-
-        let queries = [
-            "SELECT * FROM players",
-            "SELECT * FROM players_positions",
-            "SELECT * FROM players_positions_lr",
-        ];
-
-        conn.subscribe()
-            .on_applied(|_| info!("Subscribed to players"))
-            .on_error(|_, err| {
-                error!("Error subscribing to players: {}", err);
-            })
-            .subscribe(queries);
     }
 }
 
@@ -75,4 +63,21 @@ fn on_disconnected(mut events: ReadStdbDisconnectedEvent) {
     for _ in events.read() {
         info!("Disconnected from SpacetimeDB");
     }
+}
+
+fn subscribe_to_world(conn: ResMut<StdbConnection<DbConnection>>) {
+    info!("Subscribing to world tables");
+
+    let queries = [
+        "SELECT * FROM players",
+        "SELECT * FROM players_positions",
+        "SELECT * FROM players_positions_lr",
+    ];
+
+    conn.subscribe()
+        .on_applied(|_| info!("Subscribed to world"))
+        .on_error(|_, err| {
+            panic!("Error while subscribing to world: {}", err);
+        })
+        .subscribe(queries);
 }

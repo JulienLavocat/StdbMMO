@@ -1,13 +1,13 @@
 use avian3d::prelude::*;
 use bevy::{color::palettes::css::GRAY, prelude::*};
 
-use crate::state::InGameSet;
+use crate::state::GameState;
 
 pub struct WorldPlugin;
 
 impl Plugin for WorldPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(Startup, spawn_world.in_set(InGameSet));
+        app.add_systems(OnEnter(GameState::InGame), spawn_world);
     }
 }
 
@@ -18,6 +18,7 @@ fn spawn_world(
 ) {
     // Floor
     commands.spawn((
+        Name::new("Floor"),
         Mesh3d(meshes.add(Plane3d::default().mesh().size(128.0, 128.0))),
         MeshMaterial3d(materials.add(Color::WHITE)),
         RigidBody::Static,
