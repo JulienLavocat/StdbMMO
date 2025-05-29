@@ -1,6 +1,4 @@
-database=ariaonline
-
-.PHONY: publish client bindings server bots all 
+database := "ariaonline"
 
 all: server client
 
@@ -16,7 +14,7 @@ bindings:
 	spacetime generate --lang rust --out-dir ./bindings/src/bindings --project-path server
 
 publish:
-	spacetime publish -c -y -p server $(database)
+	spacetime publish -c -y -p server {{database}}
 
-bots:
-	cargo run -p bots -- $(NUM)
+bots *ARGS:
+	cargo run -p bots -- {{ARGS}}
