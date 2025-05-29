@@ -17,6 +17,10 @@ mod movement_replication;
 
 use crate::input::create_input_map;
 
+pub const PLAYER_WALK_SPEED: f32 = 4.0;
+pub const PLAYER_RUN_SPEED: f32 = 10.0;
+pub const PLAYER_JUMP_HEIGHT: f32 = 2.0;
+
 #[derive(Component)]
 pub struct LocalPlayer;
 
@@ -64,7 +68,7 @@ fn on_player_inserted(
             create_input_map(),
             Transform::from_xyz(event.row.x, event.row.y, event.row.z),
             RigidBody::Dynamic,
-            Collider::capsule_endpoints(0.3, Vec3::new(0.0, 0.5, 0.0), Vec3::new(0.0, 1.0, 0.0)),
+            Collider::capsule_endpoints(0.3, Vec3::new(0.0, 0.0, 0.0), Vec3::new(0.0, 1.0, 0.0)),
             TnuaController::default(),
             TnuaAvian3dSensorShape(Collider::cylinder(0.29, 0.0)),
             TnuaAnimatingState::<PlayerAnimationState>::default(),

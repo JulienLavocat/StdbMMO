@@ -2,9 +2,11 @@ use bevy::prelude::*;
 use bevy_tnua::prelude::{TnuaBuiltinJump, TnuaBuiltinWalk, TnuaController};
 use leafwing_input_manager::prelude::ActionState;
 
-use crate::{constants::PLAYER_WALK_SPEED, input::Actions};
+use crate::input::Actions;
 
-use super::{LocalPlayer, LocalPlayerCamera};
+use super::{
+    LocalPlayer, LocalPlayerCamera, PLAYER_JUMP_HEIGHT, PLAYER_RUN_SPEED, PLAYER_WALK_SPEED,
+};
 
 pub fn apply_controls(
     mut controller: Single<&mut TnuaController>,
@@ -23,20 +25,21 @@ pub fn apply_controls(
 
     let direction = (forward * direction.y + right * direction.x).normalize_or_zero();
 
+    let speed = if actions.pressed(&Actions::Run) {
+        PLAYER_RUN_SPEED
+    } else {
+        PLAYER_WALK_SPEED
+    };
+
     controller.basis(TnuaBuiltinWalk {
-        desired_velocity: direction * PLAYER_WALK_SPEED,
+        desired_velocity: direction * speed,
         float_height: 0.51,
         ..Default::default()
     });
 
-    if actions.just_pressed(&Actions::Jump) {
-        println!("Jump action triggered");
-    }
-
     if actions.pressed(&Actions::Jump) {
         controller.action(TnuaBuiltinJump {
-            height: 4.0,
-            fall_extra_gravity: 10.0,
+            height: PLAYER_JUMP_HEIGHT,
             ..Default::default()
         });
     }

@@ -5,21 +5,23 @@ use bevy_tnua::{
     prelude::{TnuaBuiltinJump, TnuaBuiltinWalk, TnuaController},
 };
 
-use crate::{animation_link::AnimationEntityLink, local_player::PlayerGltfHandle};
-
 use super::LocalPlayer;
+use crate::{
+    animation_link::AnimationEntityLink,
+    local_player::{PLAYER_WALK_SPEED, PlayerGltfHandle},
+};
 
 #[derive(Resource)]
 struct PlayerAnimationNodes {
     standing: AnimationNodeIndex,
     walking: AnimationNodeIndex,
-    jumping: AnimationNodeIndex,
-    falling: AnimationNodeIndex,
+    running: AnimationNodeIndex,
 }
 
 pub enum PlayerAnimationState {
     Standing,
     Walking(f32),
+    Running(f32),
     Jumping,
     Falling,
 }
@@ -56,13 +58,8 @@ fn prepare_animations(
             1.0,
             root_node,
         ),
-        jumping: graph.add_clip(
-            gltf_model.named_animations["Jumping"].clone(),
-            1.0,
-            root_node,
-        ),
-        falling: graph.add_clip(
-            gltf_model.named_animations["Falling"].clone(),
+        running: graph.add_clip(
+            gltf_model.named_animations["Running"].clone(),
             1.0,
             root_node,
         ),
@@ -121,7 +118,12 @@ fn handle_animating(
             } else {
                 let speed = basis_state.running_velocity.length();
                 if speed > 0.01 {
-                    PlayerAnimationState::Walking(0.1 * speed)
+                    // Epsilon check for floating point precision
+                    if (speed - PLAYER_WALK_SPEED).abs() < 1e-4 {
+                        PlayerAnimationState::Walking(0.3 * speed)
+                    } else {
+                        PlayerAnimationState::Running(0.20 * speed)
+                    }
                 } else {
                     PlayerAnimationState::Standing
                 }
@@ -137,12 +139,6 @@ fn handle_animating(
                 if let Some(animation) = animation_player.animation_mut(animation_nodes.walking) {
                     animation.set_speed(*speed);
                 }
-            }
-            if let PlayerAnimationState::Jumping = state {
-                println!("Maintaining jumping animation");
-            }
-            if let PlayerAnimationState::Falling = state {
-                animation_player.stop_all();
             }
         }
         TnuaAnimatingStateDirective::Alter {
@@ -164,12 +160,13 @@ fn handle_animating(
                         .set_speed(*speed)
                         .repeat();
                 }
-                PlayerAnimationState::Jumping => {
-                    println!("Jumping animation");
+                PlayerAnimationState::Running(speed) => {
                     animation_player
-                        .start(animation_nodes.jumping)
-                        .set_speed(3.0);
+                        .start(animation_nodes.running)
+                        .set_speed(*speed)
+                        .repeat();
                 }
+                PlayerAnimationState::Jumping => {}
                 PlayerAnimationState::Falling => {}
             }
         }
