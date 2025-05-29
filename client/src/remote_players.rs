@@ -8,7 +8,7 @@ use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent, StdbCo
 use bindings::{DbConnection, PlayerPosition, PlayersTableAccess};
 use spacetimedb_sdk::Identity;
 
-use crate::local_player::PLAYER_WALK_SPEED;
+use crate::{local_player::PLAYER_WALK_SPEED, state::InGameSet};
 
 #[derive(Resource, Default)]
 pub struct RemotePlayersRegistry {
@@ -87,10 +87,11 @@ impl Plugin for RemotePlayersPlugin {
                 on_remote_player_position_inserted,
                 on_remote_player_position_deleted,
             )
+                .in_set(InGameSet)
                 .chain(),
         )
-        .add_systems(PostUpdate, lerp_remote_players)
-        .add_systems(Update, on_remote_player_position_updated);
+        .add_systems(PostUpdate, lerp_remote_players.in_set(InGameSet))
+        .add_systems(Update, on_remote_player_position_updated.in_set(InGameSet));
     }
 }
 

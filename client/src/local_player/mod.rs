@@ -15,7 +15,7 @@ mod animations;
 mod controls;
 mod movement_replication;
 
-use crate::input::create_input_map;
+use crate::{input::create_input_map, state::InGameSet};
 
 pub const PLAYER_WALK_SPEED: f32 = 4.0;
 pub const PLAYER_RUN_SPEED: f32 = 10.0;
@@ -36,12 +36,22 @@ impl Plugin for LocalPlayerPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(PostUpdate, CameraSyncSet.after(PhysicsSet::Sync))
             .add_plugins(PlayerAnimationsPlugin)
-            .add_systems(PreUpdate, (on_player_inserted, on_player_deleted).chain())
+            .add_systems(
+                PreUpdate,
+                (on_player_inserted, on_player_deleted)
+                    .in_set(InGameSet)
+                    .chain(),
+            )
             .add_systems(
                 FixedUpdate,
-                apply_controls.in_set(TnuaUserControlsSystemSet),
+                apply_controls
+                    .in_set(TnuaUserControlsSystemSet)
+                    .in_set(InGameSet),
             )
-            .add_systems(PostUpdate, (rotate_character, sync_movement_with_server));
+            .add_systems(
+                PostUpdate,
+                (rotate_character, sync_movement_with_server).in_set(InGameSet),
+            );
     }
 }
 

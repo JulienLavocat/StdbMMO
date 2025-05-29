@@ -13,17 +13,21 @@ use input::Actions;
 use iyes_perf_ui::PerfUiPlugin;
 use iyes_perf_ui::prelude::PerfUiDefaultEntries;
 use leafwing_input_manager::plugin::InputManagerPlugin;
+use load_world::LoadWorldPlugin;
 use local_player::LocalPlayerPlugin;
 use remote_players::RemotePlayersPlugin;
 use server::ServerPlugin;
+use state::GameStatePlugin;
 use world::WorldPlugin;
 
 mod animation_link;
 mod constants;
 mod input;
+mod load_world;
 mod local_player;
 mod remote_players;
 mod server;
+mod state;
 mod world;
 
 fn main() {
@@ -53,6 +57,7 @@ fn main() {
         .add_plugins(EguiPlugin {
             enable_multipass_for_primary_context: true,
         })
+        .add_plugins(GameStatePlugin)
         .add_plugins((
             PerfUiPlugin,
             WorldInspectorPlugin::new(),
@@ -64,8 +69,13 @@ fn main() {
             ThirdPersonCameraPlugin,
             AnimationEntityLinkPlugin,
         ))
-        .add_plugins(ServerPlugin)
-        .add_plugins((WorldPlugin, LocalPlayerPlugin, RemotePlayersPlugin))
+        .add_plugins((
+            ServerPlugin,
+            LoadWorldPlugin,
+            WorldPlugin,
+            LocalPlayerPlugin,
+            RemotePlayersPlugin,
+        ))
         .add_systems(Startup, startup)
         .run();
 }

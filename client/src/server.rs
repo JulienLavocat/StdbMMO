@@ -8,6 +8,8 @@ use bindings::{
     DbConnection, PlayersPositionsLrTableAccess, PlayersPositionsTableAccess, PlayersTableAccess,
 };
 
+use crate::state::InGameSet;
+
 const MODULE_NAME: &str = "ariaonline";
 // const STDB_URI: &str = "https://maincloud.spacetimedb.com";
 const STDB_URI: &str = "https://stdb.jlavocat.eu";
@@ -45,8 +47,8 @@ impl Plugin for ServerPlugin {
             });
         app.add_plugins(plugin);
 
-        app.add_systems(First, on_connected)
-            .add_systems(Last, on_disconnected);
+        app.add_systems(First, on_connected.in_set(InGameSet))
+            .add_systems(Last, on_disconnected.in_set(InGameSet));
     }
 }
 

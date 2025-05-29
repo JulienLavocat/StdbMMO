@@ -9,6 +9,7 @@ use super::LocalPlayer;
 use crate::{
     animation_link::AnimationEntityLink,
     local_player::{PLAYER_WALK_SPEED, PlayerGltfHandle},
+    state::InGameSet,
 };
 
 #[derive(Resource)]
@@ -30,7 +31,10 @@ pub struct PlayerAnimationsPlugin;
 
 impl Plugin for PlayerAnimationsPlugin {
     fn build(&self, app: &mut App) {
-        app.add_systems(FixedUpdate, (prepare_animations, handle_animating));
+        app.add_systems(
+            FixedUpdate,
+            (prepare_animations, handle_animating).in_set(InGameSet),
+        );
     }
 }
 

@@ -16,6 +16,7 @@ leafwing-input-manager = "0.17.0"
 spacetimedb-sdk = "1.1.1"
 bevy_health_bar3d = { git = "https://github.com/slyedoc/bevy_health_bar3d", branch = "bevy_0.16" }
 iyes_perf_ui = "0.5.0"
+bevy_asset_loader = "0.23.0"
 
 [profile.dev]
 opt-level = 1
