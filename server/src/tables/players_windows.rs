@@ -17,7 +17,7 @@ pub struct PlayerWindow {
     pub hr_tl_x: f32,
     pub hr_tl_y: f32,
     pub hr_size: f32,
-    pub recompute_threshold: f32,
+    pub recompute_distance: f32,
 }
 
 impl PlayerWindow {
@@ -38,17 +38,8 @@ impl PlayerWindow {
             hr_tl_x: x + half_hr_size,
             hr_tl_y: y + half_hr_size,
             hr_size,
-            recompute_threshold: recompute_threshold * recompute_threshold,
+            recompute_distance: recompute_threshold * recompute_threshold,
         }
-    }
-
-    // Check if the position is beyond the recompute threshold of the high-resolution window
-    pub fn needs_recompute(&self, x: f32, y: f32) -> bool {
-        let dx = x - (self.hr_br_x + self.hr_tl_x) / 2.0;
-        let dy = y - (self.hr_br_y + self.hr_tl_y) / 2.0;
-        let distance_squared = dx * dx + dy * dy;
-
-        distance_squared > self.recompute_threshold
     }
 
     // Recompute the window boundaries based on the new position

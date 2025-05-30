@@ -3,7 +3,8 @@ use std::time::Duration;
 use spacetimedb::{reducer, ReducerContext, ScheduleAt, Table, TimeDuration};
 
 use crate::tables::{
-    players::{players, players_positions, players_positions_lr, Player, PlayerPosition},
+    players::{players, Player},
+    players_positions::{players_positions, players_positions_lr, PlayerPosition},
     players_windows::{players_window_updates, players_windows, PlayerWindow, PlayerWindowUpdate},
 };
 
