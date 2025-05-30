@@ -11,15 +11,22 @@ pub enum Actions {
     Jump,
     Run,
     Look,
+
+    // Debug actions
+    DebugTogglePlayerWindowGizmos,
+    DebugTogglePhysicsGizmos,
 }
 
 pub fn create_input_map() -> InputMap<Actions> {
-    let mut input_map = InputMap::<Actions>::default();
+    let mut input_map = InputMap::<Actions>::new([
+        (Actions::Jump, KeyCode::Space),
+        (Actions::Run, KeyCode::ShiftLeft),
+        (Actions::DebugTogglePlayerWindowGizmos, KeyCode::F12),
+        (Actions::DebugTogglePhysicsGizmos, KeyCode::F11),
+    ]);
 
     input_map.insert_dual_axis(Actions::Move, VirtualDPad::wasd());
 
-    input_map.insert(Actions::Jump, KeyCode::Space);
-    input_map.insert(Actions::Run, KeyCode::ShiftLeft);
     input_map.insert(Actions::Look, MouseButton::Right);
 
     input_map

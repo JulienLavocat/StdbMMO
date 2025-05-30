@@ -9,6 +9,7 @@ use bevy_inspector_egui::quick::WorldInspectorPlugin;
 use bevy_third_person_camera::ThirdPersonCameraPlugin;
 use bevy_tnua::prelude::TnuaControllerPlugin;
 use bevy_tnua_avian3d::TnuaAvian3dPlugin;
+use debug::DebugPlugin;
 use input::Actions;
 use iyes_perf_ui::PerfUiPlugin;
 use iyes_perf_ui::prelude::PerfUiDefaultEntries;
@@ -22,6 +23,7 @@ use world::WorldPlugin;
 
 mod animation_link;
 mod constants;
+mod debug;
 mod input;
 mod load_world;
 mod local_player;
@@ -68,6 +70,7 @@ fn main() {
             AnimationEntityLinkPlugin,
         ))
         .add_plugins((
+            DebugPlugin,
             ServerPlugin,
             LoadWorldPlugin,
             WorldPlugin,
