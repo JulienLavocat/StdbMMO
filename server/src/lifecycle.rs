@@ -12,7 +12,7 @@ use crate::tables::{
 fn on_init(ctx: &ReducerContext) {
     ctx.db.players_window_updates().insert(PlayerWindowUpdate {
         id: 1,
-        scheduled_at: ScheduleAt::Interval(TimeDuration::from_duration(Duration::from_millis(500))),
+        scheduled_at: ScheduleAt::Interval(TimeDuration::from_duration(Duration::from_millis(250))),
     });
 }
 

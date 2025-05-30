@@ -18,7 +18,7 @@ pub struct PlayerWindow {
     pub hr_tl_x: f32,
     pub hr_tl_y: f32,
     pub hr_size: f32,
-    pub recompute_threshold: f32,
+    pub recompute_distance: f32,
 }
 
 impl __sdk::InModule for PlayerWindow {

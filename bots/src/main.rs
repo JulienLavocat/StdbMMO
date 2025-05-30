@@ -30,8 +30,8 @@ async fn main() {
 
     let mut handles = vec![];
 
-    for id in 0..num_bots {
-        let handle = tokio::spawn(run_bot(id, args));
+    for i in 0..num_bots {
+        let handle = tokio::spawn(run_bot(i + 1, args));
         handles.push(handle);
     }
 
@@ -41,7 +41,7 @@ async fn main() {
 }
 
 async fn run_bot(id: usize, args: Args) {
-    let delay = id * 25;
+    let delay = id * 50;
     sleep(Duration::from_millis(delay as u64)).await;
 
     let conn = DbConnection::builder()
