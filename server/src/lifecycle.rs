@@ -25,7 +25,8 @@ fn on_connected(ctx: &ReducerContext) {
     ctx.db.players_positions_lr().insert(position);
 
     ctx.db.players_windows().insert(PlayerWindow::new(
-        ctx.sender, position.x, position.z, 256.0, 128.0,
+        // ctx.sender, position.x, position.z, 256.0, 128.0,
+        ctx.sender, position.x, position.z, 64.0, 32.0,
     ));
 }
 

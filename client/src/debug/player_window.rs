@@ -71,8 +71,8 @@ fn show_player_window_gizmos(
     }
 
     for window in conn.db().players_windows().iter() {
-        let center_x = window.hr_br_x + (window.hr_tl_x - window.hr_br_x) / 2.0;
-        let center_z = window.hr_br_y + (window.hr_tl_y - window.hr_br_y) / 2.0;
+        let center_x = window.hr_bl_x + (window.hr_tr_x - window.hr_bl_x) / 2.0;
+        let center_z = window.hr_bl_z + (window.hr_tr_z - window.hr_bl_z) / 2.0;
 
         let isometry = Isometry3d::new(
             Vec3::new(center_x, player.translation.y, center_z),

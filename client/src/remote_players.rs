@@ -4,11 +4,16 @@ use bevy_health_bar3d::{
     plugin::HealthBarPlugin,
     prelude::{BarHeight, BarSettings, ColorScheme, ForegroundColor, Percentage},
 };
+use bevy_mod_billboard::prelude::*;
 use bevy_spacetimedb::{ReadDeleteEvent, ReadInsertEvent, ReadUpdateEvent, StdbConnection};
 use bindings::{DbConnection, PlayerPosition, PlayersTableAccess};
 use spacetimedb_sdk::Identity;
 
-use crate::{load_world::CharacterAssets, local_player::PLAYER_WALK_SPEED, state::InGameSet};
+use crate::{
+    load_world::{CharacterAssets, NameplateAssets},
+    local_player::PLAYER_WALK_SPEED,
+    state::InGameSet,
+};
 
 #[derive(Resource, Default)]
 pub struct RemotePlayersRegistry {
@@ -100,6 +105,7 @@ fn on_remote_player_position_inserted(
     mut registry: ResMut<RemotePlayersRegistry>,
     mut events: ReadInsertEvent<PlayerPosition>,
     models: Res<CharacterAssets>,
+    nameplates: Res<NameplateAssets>,
     conn: Res<StdbConnection<DbConnection>>,
 ) {
     for event in events.read() {
@@ -107,7 +113,7 @@ fn on_remote_player_position_inserted(
             continue;
         }
 
-        // info!("Remote player position inserted: {:?}", event.row);
+        info!("Remote player position inserted: {:?}", event.row.id);
         let player = conn.db().players().id().find(&conn.identity()).unwrap();
 
         let entity = commands
@@ -147,7 +153,7 @@ fn on_remote_player_position_inserted(
                 children![(
                     SceneRoot(models.character_scene.clone()),
                     Transform::from_xyz(0.0, -0.5, 0.0)
-                )],
+                ),],
             ))
             .id();
 
@@ -166,11 +172,16 @@ fn on_remote_player_position_deleted(
             continue;
         }
 
-        // info!("Remote player position deleted: {:?}", event.row);
+        info!("Remote player position deleted: {:?}", event.row.id);
 
         if let Some(remote_player_entity) = registry.get_entity(&event.row.id) {
             commands.entity(remote_player_entity).despawn();
             registry.remove(&event.row.id);
+        } else {
+            warn!(
+                "Remote player position deleted for unknown entity: {}",
+                event.row.id.to_abbreviated_hex()
+            );
         }
     }
 }

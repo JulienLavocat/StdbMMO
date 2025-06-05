@@ -7,15 +7,15 @@ use crate::players::update_players_windows;
 pub struct PlayerWindow {
     #[primary_key]
     pub id: Identity,
-    pub lr_br_x: f32,
-    pub lr_br_y: f32,
-    pub lr_tl_x: f32,
-    pub lr_tl_y: f32,
+    pub lr_bl_x: f32,
+    pub lr_bl_z: f32,
+    pub lr_tr_x: f32,
+    pub lr_tr_z: f32,
     pub lr_size: f32,
-    pub hr_br_x: f32,
-    pub hr_br_y: f32,
-    pub hr_tl_x: f32,
-    pub hr_tl_y: f32,
+    pub hr_bl_x: f32,
+    pub hr_bl_z: f32,
+    pub hr_tr_x: f32,
+    pub hr_tr_z: f32,
     pub hr_size: f32,
     pub recompute_distance: f32,
 }
@@ -28,34 +28,34 @@ impl PlayerWindow {
         let recompute_threshold = hr_size / 8.0;
         Self {
             id,
-            lr_br_x: x - half_lr_size,
-            lr_br_y: y - half_lr_size,
-            lr_tl_x: x + half_lr_size,
-            lr_tl_y: y + half_lr_size,
+            lr_bl_x: x - half_lr_size,
+            lr_bl_z: y - half_lr_size,
+            lr_tr_x: x + half_lr_size,
+            lr_tr_z: y + half_lr_size,
             lr_size,
-            hr_br_x: x - half_hr_size,
-            hr_br_y: y - half_hr_size,
-            hr_tl_x: x + half_hr_size,
-            hr_tl_y: y + half_hr_size,
+            hr_bl_x: x - half_hr_size,
+            hr_bl_z: y - half_hr_size,
+            hr_tr_x: x + half_hr_size,
+            hr_tr_z: y + half_hr_size,
             hr_size,
             recompute_distance: recompute_threshold * recompute_threshold,
         }
     }
 
     // Recompute the window boundaries based on the new position
-    pub fn recompute(&mut self, x: f32, y: f32) {
+    pub fn recompute(&mut self, x: f32, z: f32) {
         let half_lr_size = self.lr_size / 2.0;
         let half_hr_size = self.hr_size / 2.0;
 
-        self.lr_br_x = x - half_lr_size;
-        self.lr_br_y = y - half_lr_size;
-        self.lr_tl_x = x + half_lr_size;
-        self.lr_tl_y = y + half_lr_size;
+        self.lr_bl_x = x - half_lr_size;
+        self.lr_bl_z = z - half_lr_size;
+        self.lr_tr_x = x + half_lr_size;
+        self.lr_tr_z = z + half_lr_size;
 
-        self.hr_br_x = x - half_hr_size;
-        self.hr_br_y = y - half_hr_size;
-        self.hr_tl_x = x + half_hr_size;
-        self.hr_tl_y = y + half_hr_size;
+        self.hr_bl_x = x - half_hr_size;
+        self.hr_bl_z = z - half_hr_size;
+        self.hr_tr_x = x + half_hr_size;
+        self.hr_tr_z = z + half_hr_size;
     }
 }
 

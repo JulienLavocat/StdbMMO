@@ -1,11 +1,12 @@
 use animation_link::AnimationEntityLinkPlugin;
 use avian3d::PhysicsPlugins;
-use avian3d::prelude::PhysicsDebugPlugin;
+use avian3d::prelude::{PhysicsDebugPlugin, PhysicsGizmos};
 use bevy::log::{DEFAULT_FILTER, LogPlugin};
 use bevy::prelude::*;
 use bevy::window::WindowMode;
 use bevy_inspector_egui::bevy_egui::EguiPlugin;
 use bevy_inspector_egui::quick::WorldInspectorPlugin;
+use bevy_mod_billboard::plugin::BillboardPlugin;
 use bevy_third_person_camera::ThirdPersonCameraPlugin;
 use bevy_tnua::prelude::TnuaControllerPlugin;
 use bevy_tnua_avian3d::TnuaAvian3dPlugin;
@@ -33,54 +34,58 @@ mod state;
 mod world;
 
 fn main() {
-    App::new()
-        .add_plugins(
-            DefaultPlugins
-                .set(WindowPlugin {
-                    primary_window: Some(Window {
-                        title: "Aria Online".to_string(),
-                        present_mode: bevy::window::PresentMode::Immediate,
-                        mode: WindowMode::Windowed,
-                        // mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
-                        ..Default::default()
-                    }),
-                    ..default()
-                })
-                .set(LogPlugin {
-                    filter: DEFAULT_FILTER.to_owned()
-                        + ",client=debug,bevy_egui=error,bevy_render::view::window=error",
-                    ..default()
+    let mut app = App::new();
+
+    app.add_plugins(
+        DefaultPlugins
+            .set(WindowPlugin {
+                primary_window: Some(Window {
+                    title: "Aria Online".to_string(),
+                    present_mode: bevy::window::PresentMode::Immediate,
+                    mode: WindowMode::Windowed,
+                    // mode: WindowMode::BorderlessFullscreen(MonitorSelection::Current),
+                    ..Default::default()
                 }),
-        )
-        .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
-        .add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin)
-        .add_plugins(EguiPlugin {
-            enable_multipass_for_primary_context: true,
-        })
-        .add_plugins(GameStatePlugin)
-        .add_plugins((
-            PerfUiPlugin,
-            WorldInspectorPlugin::new(),
-            InputManagerPlugin::<Actions>::default(),
-            PhysicsPlugins::default(),
-            PhysicsDebugPlugin::default(),
-            TnuaControllerPlugin::new(FixedUpdate),
-            TnuaAvian3dPlugin::new(FixedUpdate),
-            ThirdPersonCameraPlugin,
-            AnimationEntityLinkPlugin,
-        ))
-        .add_plugins((
-            DebugPlugin,
-            ServerPlugin,
-            LoadWorldPlugin,
-            WorldPlugin,
-            LocalPlayerPlugin,
-            RemotePlayersPlugin,
-        ))
-        .add_systems(Startup, startup)
-        .run();
+                ..default()
+            })
+            .set(LogPlugin {
+                filter: DEFAULT_FILTER.to_owned()
+                    + ",client=debug,bevy_egui=error,bevy_render::view::window=error",
+                ..default()
+            }),
+    )
+    .add_plugins(bevy::diagnostic::FrameTimeDiagnosticsPlugin::default())
+    .add_plugins(bevy::render::diagnostic::RenderDiagnosticsPlugin)
+    .add_plugins(EguiPlugin {
+        enable_multipass_for_primary_context: true,
+    })
+    .add_plugins(GameStatePlugin)
+    .add_plugins((
+        PerfUiPlugin,
+        WorldInspectorPlugin::new(),
+        InputManagerPlugin::<Actions>::default(),
+        PhysicsPlugins::default(),
+        PhysicsDebugPlugin::default(),
+        TnuaControllerPlugin::new(FixedUpdate),
+        TnuaAvian3dPlugin::new(FixedUpdate),
+        ThirdPersonCameraPlugin,
+        AnimationEntityLinkPlugin,
+        BillboardPlugin,
+    ))
+    .add_plugins((
+        DebugPlugin,
+        ServerPlugin,
+        LoadWorldPlugin,
+        WorldPlugin,
+        LocalPlayerPlugin,
+        RemotePlayersPlugin,
+    ))
+    .add_systems(Startup, startup);
+
+    app.run();
 }
 
-fn startup(mut commands: Commands) {
+fn startup(mut commands: Commands, mut gizmo_config: ResMut<GizmoConfigStore>) {
     commands.spawn(PerfUiDefaultEntries::default());
+    gizmo_config.config_mut::<PhysicsGizmos>().0.enabled = false;
 }

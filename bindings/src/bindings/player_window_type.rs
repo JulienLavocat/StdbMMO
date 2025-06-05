@@ -8,15 +8,15 @@ use spacetimedb_sdk::__codegen::{self as __sdk, __lib, __sats, __ws};
 #[sats(crate = __lib)]
 pub struct PlayerWindow {
     pub id: __sdk::Identity,
-    pub lr_br_x: f32,
-    pub lr_br_y: f32,
-    pub lr_tl_x: f32,
-    pub lr_tl_y: f32,
+    pub lr_bl_x: f32,
+    pub lr_bl_z: f32,
+    pub lr_tr_x: f32,
+    pub lr_tr_z: f32,
     pub lr_size: f32,
-    pub hr_br_x: f32,
-    pub hr_br_y: f32,
-    pub hr_tl_x: f32,
-    pub hr_tl_y: f32,
+    pub hr_bl_x: f32,
+    pub hr_bl_z: f32,
+    pub hr_tr_x: f32,
+    pub hr_tr_z: f32,
     pub hr_size: f32,
     pub recompute_distance: f32,
 }

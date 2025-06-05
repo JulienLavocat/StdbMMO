@@ -9,10 +9,8 @@ const PLAYERS_POSITIONS_FILTER: Filter = Filter::Sql(
     "SELECT p.* FROM players_positions p
         JOIN players_windows pw
         WHERE pw.id = :sender
-        AND (
-            p.x >= pw.hr_br_x AND p.x <= pw.hr_tl_x AND
-            p.y >= pw.hr_br_y AND p.y <= pw.hr_tl_y
-        )
+            AND p.x >= pw.hr_bl_x AND p.x <= pw.hr_tr_x
+            AND p.z >= pw.hr_bl_z AND p.z <= pw.hr_tr_z
         ",
 );
 
@@ -22,12 +20,12 @@ const PLAYERS_POSITIONS_LR_FILTER: Filter = Filter::Sql(
     "SELECT p.* FROM players_positions_lr p
         JOIN players_windows pw
         WHERE
-            pw.id = :sender 
-            AND p.x >= pw.lr_br_x AND p.x <= pw.lr_tl_x
-            AND p.y >= pw.lr_br_y AND p.y <= pw.lr_tl_y
+            pw.id = :sender
+            AND p.x >= pw.lr_bl_x AND p.x <= pw.lr_tr_x
+            AND p.z >= pw.lr_bl_z AND p.z <= pw.lr_tr_z
             AND (
-                p.x < pw.hr_br_x OR p.x > pw.hr_tl_x
-                OR p.y < pw.hr_br_y OR p.y > pw.hr_tl_y
-            )
+                p.x < pw.hr_bl_x OR p.x > pw.hr_tr_x OR
+                p.z < pw.hr_bl_z OR p.z > pw.hr_tr_z
+        )
     ",
 );

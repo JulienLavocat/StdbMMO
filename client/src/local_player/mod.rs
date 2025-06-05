@@ -32,6 +32,7 @@ pub struct LocalPlayerPlugin;
 impl Plugin for LocalPlayerPlugin {
     fn build(&self, app: &mut App) {
         app.configure_sets(PostUpdate, CameraSyncSet.after(PhysicsSet::Sync))
+            .insert_resource(UiScale(0.5))
             .add_plugins(PlayerAnimationsPlugin)
             .add_systems(
                 PreUpdate,
@@ -86,7 +87,7 @@ fn on_player_inserted(
             children![(
                 SceneRoot(character_assets.character_scene.clone()),
                 Transform::from_xyz(0.0, -0.5, 0.0)
-            )],
+            ),],
         ));
 
         commands.spawn((

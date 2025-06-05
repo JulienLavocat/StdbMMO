@@ -14,6 +14,12 @@ pub struct CharacterAssets {
     pub character: Handle<Gltf>,
 }
 
+#[derive(AssetCollection, Resource)]
+pub struct NameplateAssets {
+    #[asset(path = "fonts/GeistMono-Regular.ttf")]
+    pub font: Handle<Font>,
+}
+
 pub struct LoadWorldPlugin;
 
 impl Plugin for LoadWorldPlugin {
@@ -21,6 +27,7 @@ impl Plugin for LoadWorldPlugin {
         app.add_loading_state(
             LoadingState::new(GameState::LoadingWorld)
                 .continue_to_state(GameState::InGame)
+                .load_collection::<NameplateAssets>()
                 .load_collection::<CharacterAssets>(),
         );
     }
